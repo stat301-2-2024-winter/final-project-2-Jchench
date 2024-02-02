@@ -3,10 +3,278 @@
 library(tidyverse)
 library(tidymodels)
 library(here)
+library(naniar)
 
-hist_tornado_dat <- 
-  read_csv(here("data/historical-tornado-tracks.csv"))
+# https://www.kaggle.com/datasets/sujaykapadnis/tornados
 
 tornados_data <- 
   read_csv(here("data/tornados.csv"))
 
+# complexity check
+summary(tornados_data)
+glimpse(tornados_data)
+skimr::skim(tornados_data)
+
+# check missingness
+gg_miss_var(tornados_data)
+
+miss_var_summary(tornados_data) |> 
+  filter(n_miss != 0)
+
+tornados_data |> 
+  ggplot(aes(x = loss)) +
+  geom_density() +
+  xlim(c(0,500000))
+
+tornados_data |> 
+  ggplot(aes(x = inj)) +
+  geom_density()+
+  xlim(c(0, 100))
+
+#cleaning data
+
+drop_out_dat <- read_delim("data/data.csv", delim = ";") |> 
+  janitor::clean_names()
+
+application_mode_labels <- c("1st phase - general contingent",
+                             "Ordinance No. 612/93",
+                             "1st phase - special contingent (Azores Island)",
+                             "Holders of other higher courses",
+                             "Ordinance No. 854-B/99",
+                             "International student (bachelor)",
+                             "1st phase - special contingent (Madeira Island)",
+                             "2nd phase - general contingent",
+                             "3rd phase - general contingent",
+                             "Ordinance No. 533-A/99, item b2) (Different Plan)",
+                             "Ordinance No. 533-A/99, item b3 (Other Institution)",
+                             "Over 23 years old",
+                             "Transfer",
+                             "Change of course",
+                             "Technological specialization diploma holders",
+                             "Change of institution/course",
+                             "Short cycle diploma holders",
+                             "Change of institution/course (International)")
+
+course_labels <-c("Biofuel Production Technologies",
+                  "Animation and Multimedia Design",
+                  "Social Service (evening attendance)",
+                  "Agronomy",
+                  "Communication Design",
+                  "Veterinary Nursing",
+                  "Informatics Engineering",
+                  "Equinculture",
+                  "Management",
+                  "Social Service",
+                  "Tourism",
+                  "Nursing",
+                  "Oral Hygiene",
+                  "Advertising and Marketing Management",
+                  "Journalism and Communication",
+                  "Basic Education",
+                  "Management (evening attendance)")
+
+previous_qualification_labels <- c("Secondary education",
+                                   "Higher education - bachelor's degree",
+                                   "Higher education - degree",
+                                   "Higher education - master's",
+                                   "Higher education - doctorate",
+                                   "Frequency of higher education",
+                                   "12th year of schooling - not completed",
+                                   "11th year of schooling - not completed",
+                                   "Other - 11th year of schooling",
+                                   "10th year of schooling",
+                                   "10th year of schooling - not completed",
+                                   "Basic education 3rd cycle (9th/10th/11th year) or equiv.",
+                                   "Basic education 2nd cycle (6th/7th/8th year) or equiv.",
+                                   "Technological specialization course",
+                                   "Higher education - degree (1st cycle)",
+                                   "Professional higher technical course",
+                                   "Higher education - master (2nd cycle)")
+
+nationality_labels <- c("Portuguese",
+                        "German",
+                        "Spanish",
+                        "Italian",
+                        "Dutch",
+                        "English",
+                        "Lithuanian",
+                        "Angolan",
+                        "Cape Verdean",
+                        "Guinean",
+                        "Mozambican",
+                        "Santomean",
+                        "Turkish",
+                        "Brazilian",
+                        "Romanian",
+                        "Moldova (Republic of)",
+                        "Mexican",
+                        "Ukrainian",
+                        "Russian",
+                        "Cuban",
+                        "Colombian")
+
+mothers_qualification_labels <- c("Secondary Education - 12th Year of Schooling or Eq.",
+                                  "Higher Education - Bachelor's Degree",
+                                  "Higher Education - Degree",
+                                  "Higher Education - Master's",
+                                  "Higher Education - Doctorate",
+                                  "Frequency of Higher Education",
+                                  "12th Year of Schooling - Not Completed",
+                                  "11th Year of Schooling - Not Completed",
+                                  "7th Year (Old)",
+                                  "Other - 11th Year of Schooling",
+                                  "10th Year of Schooling",
+                                  "General commerce course",
+                                  "Basic Education 3rd Cycle (9th/10th/11th Year) or Equiv.",
+                                  "Technical-professional course",
+                                  "7th year of schooling",
+                                  "2nd cycle of the general high school course",
+                                  "9th Year of Schooling - Not Completed",
+                                  "8th year of schooling",
+                                  "Unknown",
+                                  "Can't read or write",
+                                  "Can read without having a 4th year of schooling",
+                                  "Basic education 1st cycle (4th/5th year) or equiv.",
+                                  "Basic Education 2nd Cycle (6th/7th/8th Year) or Equiv.",
+                                  "Technological specialization course",
+                                  "Higher education - degree (1st cycle)",
+                                  "Specialized higher studies course",
+                                  "Professional higher technical course",
+                                  "Higher Education - Master (2nd cycle)",
+                                  "Higher Education - Doctorate (3rd cycle)")
+
+fathers_qualification_labels <- c("Secondary Education - 12th Year of Schooling or Eq.",
+                                  "Higher Education - Bachelor's Degree",
+                                  "Higher Education - Degree",
+                                  "Higher Education - Master's",
+                                  "Higher Education - Doctorate",
+                                  "Frequency of Higher Education",
+                                  "12th Year of Schooling - Not Completed",
+                                  "11th Year of Schooling - Not Completed",
+                                  "7th Year (Old)",
+                                  "Other - 11th Year of Schooling",
+                                  "2nd year complementary high school course",
+                                  "10th Year of Schooling",
+                                  "General commerce course",
+                                  "Basic Education 3rd Cycle (9th/10th/11th Year) or Equiv.",
+                                  "Complementary High School Course",
+                                  "Technical-professional course",
+                                  "Complementary High School Course - not concluded",
+                                  "7th year of schooling",
+                                  "2nd cycle of the general high school course",
+                                  "9th Year of Schooling - Not Completed",
+                                  "8th year of schooling",
+                                  "General Course of Administration and Commerce",
+                                  "Supplementary Accounting and Administration",
+                                  "Unknown",
+                                  "Can't read or write",
+                                  "Can read without having a 4th year of schooling",
+                                  "Basic education 1st cycle (4th/5th year) or equiv.",
+                                  "Basic Education 2nd Cycle (6th/7th/8th Year) or Equiv.",
+                                  "Technological specialization course",
+                                  "Higher education - degree (1st cycle)",
+                                  "Specialized higher studies course",
+                                  "Professional higher technical course",
+                                  "Higher Education - Master (2nd cycle)",
+                                  "Higher Education - Doctorate (3rd cycle)")
+
+mothers_occupation_labels <- c("Student",
+                               "Representatives of the Legislative Power and Executive Bodies, Directors, Directors and Executive Managers",
+                               "Specialists in Intellectual and Scientific Activities",
+                               "Intermediate Level Technicians and Professions",
+                               "Administrative staff",
+                               "Personal Services, Security and Safety Workers and Sellers",
+                               "Farmers and Skilled Workers in Agriculture, Fisheries and Forestry",
+                               "Skilled Workers in Industry, Construction and Craftsmen",
+                               "Installation and Machine Operators and Assembly Workers",
+                               "Unskilled Workers",
+                               "Armed Forces Professions",
+                               "Other Situation",
+                               "(blank)",
+                               "Health professionals",
+                               "Teachers",
+                               "Specialists in information and communication technologies (ICT)",
+                               "Intermediate level science and engineering technicians and professions",
+                               "Technicians and professionals, of intermediate level of health",
+                               "Intermediate level technicians from legal, social, sports, cultural and similar services",
+                               "Office workers, secretaries in general and data processing operators",
+                               "Data, accounting, statistical, financial services and registry-related operators",
+                               "Other administrative support staff",
+                               "Personal service workers",
+                               "Sellers",
+                               "Personal care workers and the like",
+                               "Skilled construction workers and the like, except electricians",
+                               "Skilled workers in printing, precision instrument manufacturing, jewelers, artisans and the like",
+                               "Workers in food processing, woodworking, clothing and other industries and crafts",
+                               "Cleaning workers",
+                               "Unskilled workers in agriculture, animal production, fisheries and forestry",
+                               "Unskilled workers in extractive industry, construction, manufacturing and transport",
+                               "Meal preparation assistants")
+
+fathers_occupation_labels <- c("Student",
+                               "Representatives of the Legislative Power and Executive Bodies, Directors, Directors and Executive Managers",
+                               "Specialists in Intellectual and Scientific Activities",
+                               "Intermediate Level Technicians and Professions",
+                               "Administrative staff",
+                               "Personal Services, Security and Safety Workers and Sellers",
+                               "Farmers and Skilled Workers in Agriculture, Fisheries and Forestry",
+                               "Skilled Workers in Industry, Construction and Craftsmen",
+                               "Installation and Machine Operators and Assembly Workers",
+                               "Unskilled Workers",
+                               "Armed Forces Professions",
+                               "Other Situation",
+                               "(blank)",
+                               "Armed Forces Officers",
+                               "Armed Forces Sergeants",
+                               "Other Armed Forces personnel",
+                               "Directors of administrative and commercial services",
+                               "Hotel, catering, trade and other services directors",
+                               "Specialists in the physical sciences, mathematics, engineering and related techniques",
+                               "Health professionals",
+                               "Teachers",
+                               "Specialists in finance, accounting, administrative organization, public and commercial relations",
+                               "Intermediate level science and engineering technicians and professions",
+                               "Technicians and professionals, of intermediate level of health",
+                               "Intermediate level technicians from legal, social, sports, cultural and similar services",
+                               "Information and communication technology technicians",
+                               "Office workers, secretaries in general and data processing operators",
+                               "Data, accounting, statistical, financial services and registry-related operators",
+                               "Other administrative support staff",
+                               "Personal service workers",
+                               "Sellers",
+                               "Personal care workers and the like",
+                               "Protection and security services personnel",
+                               "Market-oriented farmers and skilled agricultural and animal production workers",
+                               "Farmers, livestock keepers, fishermen, hunters and gatherers, subsistence",
+                               "Skilled construction workers and the like, except electricians",
+                               "Skilled workers in metallurgy, metalworking and similar",
+                               "Skilled workers in electricity and electronics",
+                               "Workers in food processing, woodworking, clothing and other industries and crafts",
+                               "Fixed plant and machine operators",
+                               "Assembly workers",
+                               "Vehicle drivers and mobile equipment operators",
+                               "Unskilled workers in agriculture, animal production, fisheries and forestry",
+                               "Unskilled workers in extractive industry, construction, manufacturing and transport",
+                               "Meal preparation assistants",
+                               "Street vendors (except food) and street service providers")
+
+drop_out_dat <- 
+  drop_out_dat |> 
+  mutate(marital_status = factor(marital_status,
+                                 labels = c("single", "married", "widower", "divorced",
+                                            "facto union", "legally separated")),
+         application_mode = factor(application_mode,
+                                   labels = application_mode_labels),
+         application_order = factor(application_order,
+                                    ordered = TRUE),
+         course = factor(course, labels = course_labels),
+         daytime_evening_attendance = factor(daytime_evening_attendance, labels = c("evening", "daytime")),
+         previous_qualification = factor(previous_qualification, labels = previous_qualification_labels),
+         nacionality = factor(nacionality, labels = c(nationality_labels)),
+         mothers_qualification = factor(mothers_qualification, labels = mothers_qualification_labels),
+         fathers_qualification = factor(fathers_qualification, labels = fathers_qualification_labels),
+         mothers_occupation = factor(mothers_occupation, labels = mothers_occupation_labels),
+         fathers_occupation = factor(fathers_occupation, labels = fathers_occupation_labels),
+         gender = factor(gender, labels = c("female", "male")))
+
+write_rds(drop_out_dat, "data/dropout_data_cleaned")
