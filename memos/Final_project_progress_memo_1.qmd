@@ -20,15 +20,6 @@ reference-location: margin
 citation-location: margin
 ---
 
-::: {.callout-important}
-## Memo format
-
-Like all other submissions for this course, we expect the memo to be neat and well organized. This a template to get you started. 
-
-You should make this document your own. To help with this we have added a date to the yaml above (good whenever writing memos). You should remove this block when making this document your own.
-
-:::
-
 ::: {.callout-tip icon=false}
 
 ## Github Repo Link
@@ -39,23 +30,17 @@ To link to your github **repo**sitory, appropriately edit the example link below
 
 :::
 
-::: {.callout-warning}
-GitHub (free account) cannot store large files. If you try to commit and push a large dataset you will have an ERROR! Any file over 100 MB (100,000 KB) needs to be added to the `.gitignore` file BEFORE committing.
-
-**We may need to do that for files in your final project!**
-:::
-
 ## Prediction Problem
 
 The type of prediction problem that I am focusing on for this project is categorical and I'm looking to identify whether or not a student has dropped out of college at the end of a school year (2 semesters). I think having this prediction model would be useful for this problem because it will also help indicate factors that might make a student more at risk of dropping out.
 
 ## Data source
 
-The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) that I'm using is from UC Irvine's Machine Learning Repository. This dataset was created by a number of authors, using information from higher education institution (acquired from several disjoint databases) related to students enrolled in different undergraduate degrees. ^[Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2021). Predict students' dropout and academic success. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.]
+The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) that I'm using is from UC Irvine's Machine Learning Repository. This dataset was created by a number of authors, using information from higher education institution (acquired from several disjoint databases) related to students enrolled in different undergraduate degrees. ^[Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2021). Predict students' dropout and academic success. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.] 
+
+*This data was mainly taken from schools in Portugal.
 
 ## Data quality & complexity check
-
-You should demonstrate that you can read in your dataset(s) --- since we need proof of this, showing code is permitted or show code for the next steps. Quality check means providing answers to the following: How many variables and observations do you have? How many categorical vs numerical variables? Are there any missingness issues?
 
 ```{r}
 # load packages:
@@ -77,12 +62,15 @@ There are no missing variables in this dataset!
 
 ## Target variable analysis
 
-A univariate analysis of the target variable. Identify and discuss potential issues (symmetry/unbalanced/skewness & missingness) and discuss potential solutions such as transformations. 
-There are a lot of outliers for the target variable `loss` beyond the 75 percentile, so I placed a limit on the x-axis.
+Our target variable will be `target`, which indicates whether a student is currently enrolled, graduated, or has dropped out of college.
 
 ```{r}
 drop_out_data |> 
   ggplot(aes(x = target)) +
   geom_bar()
 ```
-However, we can see that the distribution is relatively unbalanced with significantly more students graducating compared to dropping out or just enrolling. Thus, it would be helpful to use strata when splitting the data into training and learning.
+We can see that the distribution is relatively imbalanced with significantly more students graduating compared to dropping out or currently enrolling. Thus, it would be helpful to use strata when splitting the data into training and learning.
+
+## Misc
+
+A lot of my original data was incorrectly categorized (i.e. factors were being indicated by numbers). I was able to do a bit of cleaning to change a couple of variable types. Other than that, my data is relatively clean and should be easy to work with, so I plan to have my models fitted by next week.

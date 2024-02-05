@@ -1,5 +1,3 @@
-## Datasets
+## Dataset
 
-Cite and describe datasets ....
-
-Tornados [1950 - 2022] dataset from [Kaggle](https://www.kaggle.com/datasets/sujaykapadnis/tornados). The data comes from NOAA's [National Weather Service Storm Prediction Center Severe Weather Maps, Graphics, and Data Page](https://www.spc.noaa.gov/wcm/#data).
+The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) that I'm using is from UC Irvine's Machine Learning Repository. This dataset uses information from higher education institution (acquired from several disjoint databases) related to students enrolled in different undergraduate degrees. ^[Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2021). Predict students' dropout and academic success. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.] 
