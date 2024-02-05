@@ -12,7 +12,7 @@ format:
     embed-resources: true
     
 execute:
-  echo: false
+  echo: true
   warning: false
 
 from: markdown+emoji 
@@ -43,11 +43,15 @@ The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+a
 ## Data quality & complexity check
 
 ```{r}
+#| echo: false
+
 # load packages:
 library(tidyverse)
 library(here)
 library(naniar)
+```
 
+```{r}
 # reading data:
 drop_out_data <- 
   read_rds(here("data/dropout_data_cleaned"))
@@ -56,6 +60,8 @@ drop_out_data <-
 The dataset includes 37 variables in total: 16 categorical variables and 21 numeric variables. This dataset also has 4424 observations with each one representing a student.
 
 ```{r}
+#| echo: false
+
 gg_miss_var(drop_out_data)
 ```
 There are no missing variables in this dataset!
@@ -65,6 +71,8 @@ There are no missing variables in this dataset!
 Our target variable will be `target`, which indicates whether a student is currently enrolled, graduated, or has dropped out of college.
 
 ```{r}
+#| echo: false
+
 drop_out_data |> 
   ggplot(aes(x = target)) +
   geom_bar()
