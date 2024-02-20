@@ -32,7 +32,7 @@ To link to your github **repo**sitory, appropriately edit the example link below
 
 ## Prediction Problem
 
-The type of prediction problem that I am focusing on for this project is categorical and I'm looking to identify whether or not a student has dropped out of college at the end of a school year (2 semesters). I think having this prediction model would be useful for this problem because it will also help indicate factors that might make a student more at risk of dropping out.
+The type of prediction problem that I am focusing on for this project is a classification problem and I'm looking to identify whether or not a student has dropped out of college at the end of a school year (2 semesters). I think having this prediction model would be useful for this problem because it will also help indicate factors that might make a student more at risk of dropping out.
 
 ## Data source
 
