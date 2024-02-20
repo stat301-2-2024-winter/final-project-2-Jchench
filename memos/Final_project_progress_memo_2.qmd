@@ -1,0 +1,44 @@
+---
+title: "Progress Memo 1"
+subtitle: |
+  | Final Project 
+  | Data Science 2 with R (STAT 301-2)
+author: "Jessie Chen"
+date: today
+
+format:
+  html:
+    toc: true
+    embed-resources: true
+    
+execute:
+  echo: true
+  warning: false
+
+from: markdown+emoji 
+reference-location: margin
+citation-location: margin
+---
+
+::: {.callout-tip icon=false}
+
+## Github Repo Link
+
+To link to your github **repo**sitory, appropriately edit the example link below. Meaning replace `https://your-github-repo-url` with your github repo url. Suggest verifying the link works before submitting.
+
+[My Repo Link](https://github.com/stat301-2-2024-winter/final-project-2-Jchench.git)
+
+:::
+
+## Analysis plan: 
+
+data splitting, resampling (cross-validation, bootstrap, etc), which model types, how many recipes, etc. Note that students should have this mapped out in their GitHub repo. That is, there should be place holder R scripts created. You don't have to have everything coded, but the overall structure should be evident. 
+
+## Defining Recipes:
+
+## Baseline Model:
+
+## Logistic Model:
+
+## Progress Summary:
+
