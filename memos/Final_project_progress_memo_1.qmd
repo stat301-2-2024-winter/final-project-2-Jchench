@@ -20,25 +20,23 @@ reference-location: margin
 citation-location: margin
 ---
 
-::: {.callout-tip icon=false}
-
+::: {.callout-tip icon="false"}
 ## Github Repo Link
 
-To link to your github **repo**sitory, appropriately edit the example link below. Meaning replace `https://your-github-repo-url` with your github repo url. Suggest verifying the link works before submitting.
-
 [My Repo Link](https://github.com/stat301-2-2024-winter/final-project-2-Jchench.git)
-
 :::
 
 ## Prediction Problem
 
-The type of prediction problem that I am focusing on for this project is a classification problem and I'm looking to identify whether or not a student has dropped out of college at the end of a school year (2 semesters). I think having this prediction model would be useful for this problem because it will also help indicate factors that might make a student more at risk of dropping out.
+The type of prediction problem that I am focusing on for this project is a **classification problem** and I'm looking to identify whether or not a student has dropped out of college at the end of a school year (2 semesters). I think having this prediction model would be useful for this problem because it will also help indicate factors that might make a student more at risk of dropping out.
 
 ## Data source
 
-The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) that I'm using is from UC Irvine's Machine Learning Repository. This dataset was created by a number of authors, using information from higher education institution (acquired from several disjoint databases) related to students enrolled in different undergraduate degrees. ^[Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2021). Predict students' dropout and academic success. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.] 
+The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) that I'm using is from UC Irvine's Machine Learning Repository. This dataset was created by a number of authors, using information from higher education institution (acquired from several disjoint databases) related to students enrolled in different undergraduate degrees. [^1]
 
-*This data was mainly taken from schools in Portugal.
+[^1]: Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2021). Predict students' dropout and academic success. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.
+
+\*This data was mainly taken from schools in Portugal.
 
 ## Data quality & complexity check
 
@@ -64,6 +62,7 @@ The dataset includes 37 variables in total: 16 categorical variables and 21 nume
 
 gg_miss_var(drop_out_data)
 ```
+
 There are no missing variables in this dataset!
 
 ## Target variable analysis
@@ -77,6 +76,7 @@ drop_out_data |>
   ggplot(aes(x = target)) +
   geom_bar()
 ```
+
 We can see that the distribution is relatively imbalanced with significantly more students graduating compared to dropping out or currently enrolling. Thus, it would be helpful to use strata when splitting the data into training and learning.
 
 ## Misc
