@@ -10,7 +10,9 @@ library(naniar)
 tidymodels_prefer()
 
 # load data
-drop_out_dat <- read_rds(here("data/dropout_data_cleaned"))
+drop_out_dat <- 
+  read_rds(here("data/dropout_data_cleaned")) |> 
+  mutate(target = as_factor(target))
 
 # split data ----
 set.seed(301)

@@ -25,7 +25,7 @@ baseline_recipe_nb <-
 prep(baseline_recipe_nb) |> 
   bake(new_data = NULL)
 
-# For Logistic, KNN, and Elastic Net
+# For Logistic, multinomial, and Elastic Net
 baseline_recipe <- 
   recipe(target ~ ., data = drop_out_train) |> 
   step_rm(application_order, application_mode) |> 
