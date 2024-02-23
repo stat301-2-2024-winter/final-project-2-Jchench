@@ -20,28 +20,120 @@ reference-location: margin
 citation-location: margin
 ---
 
-::: {.callout-tip icon=false}
-
+::: {.callout-tip icon="false"}
 ## Github Repo Link
-
-To link to your github **repo**sitory, appropriately edit the example link below. Meaning replace `https://your-github-repo-url` with your github repo url. Suggest verifying the link works before submitting.
-
 [My Repo Link](https://github.com/stat301-2-2024-winter/final-project-2-Jchench.git)
-
 :::
 
-## Analysis plan: 
+## Dataset and prediction problem:
 
-Note that students should have this mapped out in their GitHub repo. That is, there should be place holder R scripts created. You don't have to have everything coded, but the overall structure should be evident. 
+The type of prediction problem that I am focusing on for this project is a **classification problem** and I'm looking to identify whether or not a student has dropped out of college at the end of a school year (2 semesters). The variable that I'm looking to predict is `target`, which is a factor with 3 levels: Dropout, Enrolled, and Graduated.
 
-Since my dataset has around 4424 observations, which is on the smaller end, I'm planning on doing a 75-25 split so that we can get more consistent and reliable estimates. I'm also planning on doing vfold cross-validation to resample the training data. I will use 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large. For this project, I plan on using 5 models: Naive Bayes (null model), Multinomial, Elastic net, K Nearest Neighbor, Random Forest, and Boosted Tree.
+The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) that I'm using is from UC Irvine's Machine Learning Repository. This dataset was created by a number of authors, using information from higher education institution (acquired from several disjoint databases) related to students enrolled in different undergraduate degrees. [^1]
 
+[^1]: Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2021). Predict students' dropout and academic success. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.
+
+## Assessment metric:
+
+Since this is a classification problem, I will be looking at the accuracy and ROC curve metrics to determine which models performed better.
+
+## Analysis plan:
+
+Note that students should have this mapped out in their GitHub repo. That is, there should be place holder R scripts created. You don't have to have everything coded, but the overall structure should be evident.
+
+Since my dataset has around 4424 observations, which is on the smaller end, I'm planning on doing a 75-25 split so that we can get more consistent and reliable estimates. I'm also planning on doing vfold cross-validation to resample the training data. I will use 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large. For this project, I plan on using 5 models: Naive Bayes (null model), Multinomial (because my target variable `target` has 3 factor levels), Elastic net, K Nearest Neighbor, Random Forest, and Boosted Tree.
 
 ## Defining Recipes:
 
+My kitchen sink recipe for this project includes (with variations for different models):
+
+-   Predict the target variable `target`
+
+-   Remove ID/ non-relevant variables like `application_order` and `application mode`
+
+-   Encode categorical predictors (for parametric models, not applicable for Naive Bayes)
+
+    -   One-hot = TRUE (for tree-based models)
+
+-   Filter out variables have have zero variance
+
+-   Center & scale all predictors
+
+```{r}
+#| eval: false
+
+baseline_recipe <- 
+  recipe(target ~ ., data = drop_out_train) |> 
+  step_rm(application_order, application_mode) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_numeric_predictors())
+```
+
+### Looking at interactions for potential recipes:
+
 ## Baseline Model:
 
-## Logistic Model:
+For my baseline model, I decided to use a Naive Bayes model:
+
+```{r}
+#| eval: false
+
+# model spec
+naive_spec <- 
+  naive_Bayes() |> 
+  set_mode("classification") |> 
+  set_engine("klaR")
+
+# define workflow
+naive_workflow <- 
+  workflow() |> 
+  add_model(naive_spec) |> 
+  add_recipe(baseline_recipe_nb)
+
+# fit
+fit_naive <- 
+  fit_resamples(naive_workflow, 
+                resamples = drop_out_folds,
+                control = control_resamples())
+```
+
+## Multinomial Model:
+
+I'm also going to fit a multinomial model with the kitchen sink recipe to see if it performs better than the baseline model.
+
+```{r}
+#| eval: false
+
+# model spec
+multinom_spec <- 
+  multinom_reg(penalty = 0) |> 
+  set_engine("nnet") |> 
+  set_mode("classification")
+
+# define workflow
+multinom_workflow <- 
+  workflow() |> 
+  add_model(multinom_spec) |> 
+  add_recipe(baseline_recipe)
+
+# fit
+fit_multinomial <- 
+  fit_resamples(multinom_workflow, 
+                resamples = drop_out_folds,
+                control = control_resamples())
+```
+
+## Comparing Naive Bayes to Multinomial model results:
+
+```{r}
+#| echo: false
+
+load(here::here("results/baseline_results_table.rda"))
+
+baseline_results_table |> 
+  knitr::kable(col.names = c("Metric", "Naive Bayes", "Multinomial"))
+```
+As we can see from the results table, the Multinomial model has a higher mean accuracy and ROC value compared to the Naive Bayes model. Although Naive Bayes model has a slightly lower standard error across it's fold compared to the Multinomial model, the multinomial model still generally performed better in these metrics. The mean accuracy for the Multinomial model is around 0.75, which means that it was able to predict around 75% of the true type for the target variable. This is a lot higher than the mean accuracy for the Naive Bayes, which is around 0.70. The mean ROC value is pretty terrible for both models, however, the Multinomial model has a value that is slightly closer to 1. Thus, the multinomial model performed better compared to the Naive Bayes model.
 
 ## Progress Summary:
-

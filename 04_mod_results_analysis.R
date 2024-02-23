@@ -17,6 +17,13 @@ load(here("results/fit_multinomial.rda"))
 # load recipes
 load(here("results/baseline_recipes.rda"))
 
+# parallel processing
+library(doMC)
+
+num_cores <- parallel::detectCores(logical = TRUE)
+
+registerDoMC(cores = num_cores)
+
 # naive bayes
 predict_naive <- 
   fit_naive |> 
@@ -27,12 +34,15 @@ predict_multinomial <-
   fit_multinomial |> 
   collect_metrics()
 
-# make a table
-baseline_results_table <- tibble(
-  metric = c("Accuracy (mean)", "Accuracy (SE)", "ROC (mean)", "ROC (SE)"),
-  naive_bayes= c(predict_naive |> pull(mean), predict_naive |> pull(std_err)),
-  multinomial = c(predict_multinomial |> pull(mean), predict_multinomial |> pull(std_err))
-  )
+# knn
 
-save(baseline_results_table, file = here("results/baseline_results_table.rda"))
+# elastic net
+
+# rf
+
+# bt
+
+# make a table
+
+
 
