@@ -12,6 +12,13 @@ tidymodels_prefer()
 # load results
 load(here("results/drop_out_split.rda"))
 
+# parallel processing
+library(doMC)
+
+num_cores <- parallel::detectCores(logical = TRUE)
+
+registerDoMC(cores = num_cores)
+
 # model spec
 
 # define workflow

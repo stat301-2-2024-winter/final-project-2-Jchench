@@ -44,7 +44,7 @@ baseline_recipe_trees <-
   step_rm(application_order, application_mode) |> 
   step_dummy(all_nominal_predictors(), one_hot = TRUE) |> 
   step_zv(all_predictors()) |> 
-  step_normalize(all_numeric_predictors())
+  step_corr(all_predictors())
 
 # prep and bake
 prep(baseline_recipe_trees) |> 

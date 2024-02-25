@@ -20,19 +20,21 @@ load(here("results/baseline_recipes.rda"))
 # naive bayes
 predict_naive <- 
   fit_naive |> 
-  collect_metrics()
+  collect_metrics() |> 
+  mutate(model = "naive bayes")
 
 # multinomial
 predict_multinomial <- 
   fit_multinomial |> 
-  collect_metrics()
+  collect_metrics() |> 
+  mutate(model = "multinomial")
 
 # make a table
-baseline_results_table <- tibble(
-  metric = c("Accuracy (mean)", "Accuracy (SE)", "ROC (mean)", "ROC (SE)"),
-  naive_bayes= c(predict_naive |> pull(mean), predict_naive |> pull(std_err)),
-  multinomial = c(predict_multinomial |> pull(mean), predict_multinomial |> pull(std_err))
-  )
+baseline_results_table <- 
+  predict_naive |> 
+  bind_rows(predict_multinomial) |> 
+  select(-.config, -.estimator, -n)
 
+# save out
 save(baseline_results_table, file = here("results/baseline_results_table.rda"))
 

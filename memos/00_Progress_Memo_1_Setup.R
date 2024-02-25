@@ -5,32 +5,6 @@ library(tidymodels)
 library(here)
 library(naniar)
 
-# https://www.kaggle.com/datasets/sujaykapadnis/tornados
-
-tornados_data <- 
-  read_csv(here("data/tornados.csv"))
-
-# complexity check
-summary(tornados_data)
-glimpse(tornados_data)
-skimr::skim(tornados_data)
-
-# check missingness
-gg_miss_var(tornados_data)
-
-miss_var_summary(tornados_data) |> 
-  filter(n_miss != 0)
-
-tornados_data |> 
-  ggplot(aes(x = loss)) +
-  geom_density() +
-  xlim(c(0,500000))
-
-tornados_data |> 
-  ggplot(aes(x = inj)) +
-  geom_density()+
-  xlim(c(0, 100))
-
 #cleaning data
 
 drop_out_dat <- read_delim("data/data.csv", delim = ";") |> 
@@ -275,6 +249,12 @@ drop_out_dat <-
          fathers_qualification = factor(fathers_qualification, labels = fathers_qualification_labels),
          mothers_occupation = factor(mothers_occupation, labels = mothers_occupation_labels),
          fathers_occupation = factor(fathers_occupation, labels = fathers_occupation_labels),
-         gender = factor(gender, labels = c("female", "male")))
+         gender = factor(gender, labels = c("female", "male")),
+         displaced = factor(displaced),
+         educational_special_needs = factor(educational_special_needs),
+         debtor = factor(debtor),
+         tuition_fees_up_to_date = factor(tuition_fees_up_to_date),
+         scholarship_holder = factor(scholarship_holder),
+         international = factor(international))
 
 write_rds(drop_out_dat, "data/dropout_data_cleaned")
