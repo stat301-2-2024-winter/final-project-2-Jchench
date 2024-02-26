@@ -22,6 +22,7 @@ citation-location: margin
 
 ::: {.callout-tip icon="false"}
 ## Github Repo Link
+
 [My Repo Link](https://github.com/stat301-2-2024-winter/final-project-2-Jchench.git)
 :::
 
@@ -39,17 +40,15 @@ Since this is a classification problem, I will be looking at the accuracy and RO
 
 ## Analysis plan:
 
-Note that students should have this mapped out in their GitHub repo. That is, there should be place holder R scripts created. You don't have to have everything coded, but the overall structure should be evident.
-
 Since my dataset has around 4424 observations, which is on the smaller end, I'm planning on doing a 75-25 split so that we can get more consistent and reliable estimates. I'm also planning on doing vfold cross-validation to resample the training data. I will use 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large. For this project, I plan on using 5 models: Naive Bayes (null model), Multinomial (because my target variable `target` has 3 factor levels), Elastic net, K Nearest Neighbor, Random Forest, and Boosted Tree.
 
 ## Defining Recipes:
 
 My kitchen sink recipe for this project includes (with variations for different models):
 
--   Predict the target variable `target`
+-   Predict the target variable `target` with all other variables
 
--   Remove ID/ non-relevant variables like `application_order` and `application mode`
+-   Remove ID/ non-relevant variables like `application_order` and `application_mode`
 
 -   Encode categorical predictors (for parametric models, not applicable for Naive Bayes)
 
@@ -59,6 +58,7 @@ My kitchen sink recipe for this project includes (with variations for different 
 
 -   Center & scale all predictors
 
+Here is the baseline recipe I will be using:
 ```{r}
 #| eval: false
 
@@ -75,6 +75,7 @@ baseline_recipe <-
 Since my dataset isn't very large, I'm going to perform an EDA on my training dataset to see if there re any insights that can be generated to inform my recipe steps.
 
 First, I'll look at a correlation matrix across my numeric variables:
+
 ```{r}
 #| echo: false
 
@@ -85,11 +86,14 @@ load(here("results/drop_out_split.rda"))
 drop_out_train |> 
   select(where(is.numeric))|> 
   cor(use = "pairwise.complete.obs") |> 
-  ggcorrplot::ggcorrplot()
+  ggcorrplot::ggcorrplot() +
+  theme(text = element_text(size = 0.1))
 ```
+
 Some of the main insights that can be generated are that there is a strong negative relationship between gdp and unemployment rate. However, I personally don't think that these are important variables to look at since they mostly pertain to the national economy rather than individual students (I might not include them in the recipe). There is also a pretty strong positive correlation between admission grade and previous qualification grade. This means that students who were doing well academically before college also tend to do well academically during college. The number of curricular units approved and curricular unit grades for a student from the first semester is also pretty positively correlated with the curricular units approved and curricular unit grades from the second semester. This suggests that there could be possible interactions between a student's first and second semester curricular units.
 
 Next, I decided to look at parents' qualifications:
+
 ```{r}
 #| echo: false
 
@@ -104,18 +108,22 @@ drop_out_train |>
   geom_bar() +
   theme(axis.text.x = element_text(angle = 90))
 ```
+
 As we can see here, the distribution of qualifications for a student's mother and father are pretty similar. This suggests that there are possible interactions between these two variables.
 
 Next, I decided to look at gender and whether or not it affects the target variable:
+
 ```{r}
 # gender distribution within target
 drop_out_train |> 
   ggplot(aes(x = target, fill = gender)) +
   geom_bar()
 ```
+
 The bar graph shows that there are a couple of discrepancies in the gender distribution between these three target outcomes. It looks like a larger proportion of female students tend to graduate and are enrolled compared to male students. It also looks like the gender distribution for dropping out is pretty evenly split.
 
 Next, I looked at variables that were indicative of socio-economic class:
+
 ```{r}
 # socio-economic class
 drop_out_train |> 
@@ -130,9 +138,10 @@ drop_out_train |>
   ggplot(aes(x = target, fill = scholarship_holder)) +
   geom_bar()
 ```
+
 Overall, it looks like a larger proportion of students who are debtors and don't have their tuition fees up to date tend to drop out compared to the students who are debtors and don't have their tuition fees up to date in the other two outcome categories. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
 
-After performing a short EDA, I plan on creating a recipe that removes unrelated variables such as unemployment rate, GDP, and inflation (wasn't really correlated with any other variables). I also plan on creating interaction variables between first semester curricular units and second semester curricular units, admission grade and previous qualification grade, and father and mother's qualifications.
+After performing a short EDA, I plan on creating a recipe that removes unrelated variables such as unemployment rate, GDP, and inflation (wasn't really correlated with any other variables). I also plan on creating interaction variables between first semester curricular units and second semester curricular units, admission grade and previous qualification grade, and father and mother's qualifications. I also plan on adding a `step_corr` to potentially remove variables that have large absolute correlations with other variables.
 
 ## Baseline Model:
 
@@ -196,6 +205,7 @@ load(here::here("results/baseline_results_table.rda"))
 baseline_results_table |> 
   knitr::kable(col.names = c("Metric", "Mean", "Std. Err.", "Model"))
 ```
+
 As we can see from the results table, the Multinomial model has a higher mean accuracy and ROC value compared to the Naive Bayes model. Although the Naive Bayes model has a slightly lower standard error across it's folds compared to the Multinomial model, these values are still very low, which means that both models had pretty accurate means. The mean accuracy for the Multinomial model is around 0.75, which means that it was able to predict around 75% of the true type for the target variable. This is a lot higher than the mean accuracy for the Naive Bayes, which is around 0.70. The mean ROC value for the Multinomial model is also better because it's closer to 1. Thus, the multinomial model performed better compared to the Naive Bayes model.
 
 ## Progress Summary:

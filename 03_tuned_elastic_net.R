@@ -12,6 +12,9 @@ tidymodels_prefer()
 # load results
 load(here("results/drop_out_split.rda"))
 
+# load recipes
+load(here("results/baseline_recipes.rda"))
+
 # parallel processing
 library(doMC)
 
