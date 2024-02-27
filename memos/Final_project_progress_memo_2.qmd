@@ -1,5 +1,5 @@
 ---
-title: "Progress Memo 1"
+title: "Progress Memo 2"
 subtitle: |
   | Final Project 
   | Data Science 2 with R (STAT 301-2)
@@ -36,15 +36,15 @@ The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+a
 
 ## Assessment metric:
 
-Since this is a classification problem, I will be looking at the ROC curve and Accuracy metrics to determine which models performed better.
+Since this is a classification problem, I will be looking at the ROC and accuracy metrics to determine which models performed better.
 
 ## Analysis plan:
 
-Since my dataset has around 4424 observations, which is on the smaller end, I'm planning on doing a 75-25 split so that we can get more consistent and reliable estimates (3316 observations in the training dataset and 1108 observations in teh testing dataset). I'm also planning on doing vfold cross-validation to resample the training data. I will use 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large. For this project, I plan on using 5 models: Naive Bayes (null model), Multinomial (because my target variable `target` has 3 factor levels), Elastic Net, K Nearest Neighbor, Random Forest, and Boosted Tree.
+Since my dataset has around 4424 observations, which is on the smaller end, I'm planning on doing a 75-25 split so that we can get more consistent and reliable estimates (3316 observations in the training dataset and 1108 observations in teh testing dataset). I'm also planning on doing vfold cross-validation to resample the training data. I will use 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large. For this project, I plan on using 5 models: Naive Bayes (baseline model), Multinomial (because my target variable `target` has 3 factor levels), Elastic Net, K-Nearest Neighbor, Random Forest, and Boosted Tree.
 
 ## Defining Recipes:
 
-My kitchen sink recipe for this project includes (with variations for different models):
+My baseline kitchen sink recipe for this project includes (with variations for different models):
 
 -   Predict the target variable `target` with all other variables
 
@@ -60,7 +60,7 @@ My kitchen sink recipe for this project includes (with variations for different 
 
 ### Looking at interactions for potential recipes:
 
-Since my dataset isn't very large, I'm going to perform an EDA on my training dataset to see if there re any insights that can be generated to inform my recipe steps.
+Since my dataset isn't very large, I'm going to perform an EDA on my training dataset to see if there are any insights that can be generated to inform my recipe steps.
 
 First, I'll look at a correlation matrix across my numeric variables:
 
@@ -99,7 +99,7 @@ drop_out_train |>
 
 As we can see here, the distribution of qualifications for a student's mother and father are pretty similar. This suggests that there are possible interactions between these two variables.
 
-Next, I decided to look at gender and whether or not it affects the target variable:
+Next, I decided to look at gender and whether or not it is correlated with the target variable:
 
 ```{r}
 #| echo: false
@@ -110,7 +110,7 @@ drop_out_train |>
   geom_bar()
 ```
 
-The bar graph shows that there are a couple of discrepancies in the gender distribution between these three target outcomes. It looks like a larger proportion of female students tend to graduate and are enrolled compared to male students. It also looks like the gender distribution for dropping out is pretty evenly split.
+The bar graph shows that there are a couple of discrepancies in the gender proportion between these three target outcomes. It looks like a larger proportion of female students tend to graduate and are enrolled compared to male students. It also looks like the gender distribution for dropping out is pretty evenly split.
 
 Next, I looked at variables that were indicative of socio-economic class:
 
@@ -131,9 +131,9 @@ drop_out_train |>
   geom_bar()
 ```
 
-Overall, it looks like a larger proportion of students who are debtors and don't have their tuition fees up to date tend to drop out compared to the students who are debtors and don't have their tuition fees up to date in the other two outcome categories. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
+Overall, it looks like a larger proportion of students who are debtors and don't have their tuition fees up to date tend to drop out compared to the students who are debtors and don't have their tuition fees up to date in the other two other outcome categories. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
 
-After performing a short EDA, I plan on creating a recipe that removes unrelated variables such as unemployment rate, GDP, and inflation (wasn't really correlated with any other variables). The variables that would be important to look at are parent's qualifications, gender, debtor status, whether or not tuition is up to date, whether or not a student is a scholar holder. I also plan on creating interaction variables between first semester curricular units and second semester curricular units, admission grade and previous qualification grade, and father and mother's qualifications. I also plan on adding a `step_corr` for my tree-based models to potentially remove variables that have large absolute correlations with other variables.
+After performing a short EDA, I plan on creating a recipe that removes unrelated variables such as unemployment rate, GDP, and inflation (wasn't really correlated with any other variables). A couple variables that would be important to look at are a student's gender, debtor status, whether or not their tuition is up to date, and whether or not they are a scholarship holder. I also plan on creating interaction variables between first semester curricular units and second semester curricular units, admission grade and previous qualification grade, and father and mother's qualifications. I also plan on adding a `step_corr` for my tree-based models to potentially remove variables that have large absolute correlations with other variables.
 
 ## Baseline Model:
 
@@ -141,7 +141,7 @@ For my baseline model, I decided to use a Naive Bayes model. I fit the model in 
 
 ## Multinomial Model:
 
-I'm also going to fit a multinomial model with the kitchen sink recipe to see if it performs better than the baseline model. This model was fit in the R Script `03_fit_multinomial`.
+I'm also going to fit a Multinomial model with the baseline kitchen sink recipe to see if it performs better than the baseline Naive Bayes model. This model was fit in the R Script `03_fit_multinomial`.
 
 ## Comparing Naive Bayes to Multinomial model results:
 
@@ -154,8 +154,8 @@ baseline_results_table |>
   knitr::kable(col.names = c("Metric", "Mean", "Std. Err.", "Model"))
 ```
 
-As we can see from the results table, the Multinomial model has a higher mean accuracy and ROC value compared to the Naive Bayes model. Although the Naive Bayes model has a slightly lower standard error across it's folds compared to the Multinomial model, these values are still very low, which means that both models had pretty accurate means. The mean accuracy for the Multinomial model is around 0.75, which means that it was able to predict around 75% of the true type for the target variable. This is a lot higher than the mean accuracy for the Naive Bayes, which is around 0.70. The mean ROC value for the Multinomial model is also better because it's closer to 1. Thus, the multinomial model performed better compared to the Naive Bayes model.
+As we can see from the results table, the Multinomial model has a higher mean accuracy and ROC value compared to the Naive Bayes model. Although the Naive Bayes model has a slightly lower overall standard error across it's folds compared to the Multinomial model, these SE values are still very low for both models. The mean accuracy for the Multinomial model is around 0.75. This is a lot higher than the mean accuracy for the Naive Bayes, which is around 0.70. The mean ROC value for the Multinomial model is also better because it's closer to 1. Thus, the Multinomial model performed better than the Naive Bayes model.
 
 ## Progress Summary:
 
-I was able to split my testing and training datastes, set up my folds, define a kitchen sink recipe, and fit the recipe to my baselineline/ null model and a multinomial model. I currently have files set up to tune my other model types and I have a rough idea on what kind of recipe I would need to make going forwards.
+I was able to split my testing and training datastes, set up my folds, define a baseline kitchen sink recipe, and fit the recipe to my baselineline model and a Multinomial model. I currently have files set up to tune my other model types and I have a rough idea on what kind of recipe I would need to make going forwards.
