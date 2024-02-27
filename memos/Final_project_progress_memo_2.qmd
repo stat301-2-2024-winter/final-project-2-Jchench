@@ -74,11 +74,10 @@ load(here("results/drop_out_split.rda"))
 drop_out_train |> 
   select(where(is.numeric))|> 
   cor(use = "pairwise.complete.obs") |> 
-  ggcorrplot::ggcorrplot() +
-  theme(text = element_text(size = 0.1))
+  ggcorrplot::ggcorrplot()
 ```
 
-Some of the main insights that can be generated are that there is a strong negative relationship between gdp and unemployment rate. However, I personally don't think that these are important variables to look at since they mostly pertain to the national economy rather than individual students (I might not include them in the recipe). There is also a pretty strong positive correlation between admission grade and previous qualification grade. This means that students who were doing well academically before college also tend to do well academically during college. The number of curricular units approved and curricular unit grades for a student from the first semester is also pretty positively correlated with the curricular units approved and curricular unit grades from the second semester. This suggests that there could be possible interactions between a student's first and second semester curricular units.
+Some of the main insights that can be generated are that there is a strong negative relationship between gdp and unemployment rate. However, I personally don't think that these are important variables to look at since they mostly pertain to the national economy rather than individual students (I might not include them in the recipe). There is also a pretty strong positive correlation between admission grade and previous qualification grade. This means that students who were doing well academically before college also tend to do well academically during college. The number of curricular units approved and curricular unit grades for a student from the first semester is also pretty positively correlated with the curricular units approved and curricular unit grades from the second semester. This suggests that there could be possible interactions between the number of curricular units approved and grade earned for a student's first and second semester.
 
 Next, I decided to look at parents' qualifications:
 

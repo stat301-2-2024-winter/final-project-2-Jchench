@@ -1,13 +1,3 @@
-## Basic repo setup for final project
-
-My final product will look at data on college drop out numbers to try to predict the factors that make a student more prone to dropping out.
-
-## Folders:
-
--   `data`: folder with original data and cleaned data. See more in the readme in the folder.
--   `memos`: includes the r scripts, qmds, and html files for my progress memos. See more in readme in the folder.
--   `results`: contains all results. See more in readme in the folder.
-
 ## Files:
 -   `01_initial_setup`: split dataset into testing and training, split folds, saved everything out
 -   `02_recipes`: currently defined a kitchen sink recipe with variations for naive bayes, parametric and non-parametric models
