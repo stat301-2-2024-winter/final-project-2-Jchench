@@ -42,7 +42,7 @@ boost_workflow <-
 # hyperparameter tuning values
 boost_params <- 
   extract_parameter_set_dials(boost_spec) |> 
-  update(mtry = mtry(range = c(1, 14))) |> 
+  update(mtry = mtry(range = c(1, 34))) |> 
   update(learn_rate = learn_rate(range = c(-5, -0.2)))
 
 boost_grid <- 

@@ -36,11 +36,11 @@ The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+a
 
 ## Assessment metric:
 
-Since this is a classification problem, I will be looking at the accuracy and ROC curve metrics to determine which models performed better.
+Since this is a classification problem, I will be looking at the ROC curve and Accuracy metrics to determine which models performed better.
 
 ## Analysis plan:
 
-Since my dataset has around 4424 observations, which is on the smaller end, I'm planning on doing a 75-25 split so that we can get more consistent and reliable estimates. I'm also planning on doing vfold cross-validation to resample the training data. I will use 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large. For this project, I plan on using 5 models: Naive Bayes (null model), Multinomial (because my target variable `target` has 3 factor levels), Elastic net, K Nearest Neighbor, Random Forest, and Boosted Tree.
+Since my dataset has around 4424 observations, which is on the smaller end, I'm planning on doing a 75-25 split so that we can get more consistent and reliable estimates (3316 observations in the training dataset and 1108 observations in teh testing dataset). I'm also planning on doing vfold cross-validation to resample the training data. I will use 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large. For this project, I plan on using 5 models: Naive Bayes (null model), Multinomial (because my target variable `target` has 3 factor levels), Elastic Net, K Nearest Neighbor, Random Forest, and Boosted Tree.
 
 ## Defining Recipes:
 
@@ -57,18 +57,6 @@ My kitchen sink recipe for this project includes (with variations for different 
 -   Filter out variables have have zero variance
 
 -   Center & scale all predictors
-
-Here is the baseline recipe I will be using:
-```{r}
-#| eval: false
-
-baseline_recipe <- 
-  recipe(target ~ ., data = drop_out_train) |> 
-  step_rm(application_order, application_mode) |> 
-  step_dummy(all_nominal_predictors()) |> 
-  step_zv(all_predictors()) |> 
-  step_normalize(all_numeric_predictors())
-```
 
 ### Looking at interactions for potential recipes:
 
@@ -114,6 +102,8 @@ As we can see here, the distribution of qualifications for a student's mother an
 Next, I decided to look at gender and whether or not it affects the target variable:
 
 ```{r}
+#| echo: false
+
 # gender distribution within target
 drop_out_train |> 
   ggplot(aes(x = target, fill = gender)) +
@@ -125,6 +115,8 @@ The bar graph shows that there are a couple of discrepancies in the gender distr
 Next, I looked at variables that were indicative of socio-economic class:
 
 ```{r}
+#| echo: false
+
 # socio-economic class
 drop_out_train |> 
   ggplot(aes(x = target, fill = debtor)) +
@@ -141,59 +133,15 @@ drop_out_train |>
 
 Overall, it looks like a larger proportion of students who are debtors and don't have their tuition fees up to date tend to drop out compared to the students who are debtors and don't have their tuition fees up to date in the other two outcome categories. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
 
-After performing a short EDA, I plan on creating a recipe that removes unrelated variables such as unemployment rate, GDP, and inflation (wasn't really correlated with any other variables). I also plan on creating interaction variables between first semester curricular units and second semester curricular units, admission grade and previous qualification grade, and father and mother's qualifications. I also plan on adding a `step_corr` to potentially remove variables that have large absolute correlations with other variables.
+After performing a short EDA, I plan on creating a recipe that removes unrelated variables such as unemployment rate, GDP, and inflation (wasn't really correlated with any other variables). The variables that would be important to look at are parent's qualifications, gender, debtor status, whether or not tuition is up to date, whether or not a student is a scholar holder. I also plan on creating interaction variables between first semester curricular units and second semester curricular units, admission grade and previous qualification grade, and father and mother's qualifications. I also plan on adding a `step_corr` for my tree-based models to potentially remove variables that have large absolute correlations with other variables.
 
 ## Baseline Model:
 
-For my baseline model, I decided to use a Naive Bayes model:
-
-```{r}
-#| eval: false
-
-# model spec
-naive_spec <- 
-  naive_Bayes() |> 
-  set_mode("classification") |> 
-  set_engine("klaR")
-
-# define workflow
-naive_workflow <- 
-  workflow() |> 
-  add_model(naive_spec) |> 
-  add_recipe(baseline_recipe_nb)
-
-# fit
-fit_naive <- 
-  fit_resamples(naive_workflow, 
-                resamples = drop_out_folds,
-                control = control_resamples())
-```
+For my baseline model, I decided to use a Naive Bayes model. I fit the model in the R Script `03_fit_naive_bayes`.
 
 ## Multinomial Model:
 
-I'm also going to fit a multinomial model with the kitchen sink recipe to see if it performs better than the baseline model.
-
-```{r}
-#| eval: false
-
-# model spec
-multinom_spec <- 
-  multinom_reg(penalty = 0) |> 
-  set_engine("nnet") |> 
-  set_mode("classification")
-
-# define workflow
-multinom_workflow <- 
-  workflow() |> 
-  add_model(multinom_spec) |> 
-  add_recipe(baseline_recipe)
-
-# fit
-fit_multinomial <- 
-  fit_resamples(multinom_workflow, 
-                resamples = drop_out_folds,
-                control = control_resamples())
-```
+I'm also going to fit a multinomial model with the kitchen sink recipe to see if it performs better than the baseline model. This model was fit in the R Script `03_fit_multinomial`.
 
 ## Comparing Naive Bayes to Multinomial model results:
 
