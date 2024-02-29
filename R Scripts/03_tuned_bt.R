@@ -42,7 +42,7 @@ boost_workflow <-
 boost_params <- 
   extract_parameter_set_dials(boost_spec) |> 
   update(mtry = mtry(range = c(1, 225))) |> 
-  update(min_n = min_n(raneg = c(2, 15))) |> 
+  update(min_n = min_n(range = c(2, 15))) |> 
   update(learn_rate = learn_rate(range = c(-5, -0.2)))
 
 boost_grid <- 
@@ -56,4 +56,4 @@ tuned_boost <-
             control = control_grid(save_workflow = TRUE))
 
 # save out
-
+save(tuned_boost, file = here("results/tuned_boost.rda"))
