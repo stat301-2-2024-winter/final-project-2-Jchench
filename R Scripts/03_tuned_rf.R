@@ -12,6 +12,9 @@ tidymodels_prefer()
 # load results
 load(here("results/drop_out_folds.rda"))
 
+# load recipe
+load(here("results/baseline_recipes.rda"))
+
 # parallel processing
 library(doMC)
 
@@ -36,7 +39,8 @@ rf_workflow <-
 # hyperparameter tuning values
 rf_params <- 
   extract_parameter_set_dials(rf_spec) |> 
-  update(mtry = mtry(range = c(1, 34)))
+  update(mtry = mtry(range = c(1, 220))) |> 
+  update(min_n = min_n(range = c(2, 15)))
 
 rf_grid <- 
   grid_regular(rf_params, levels = 5)

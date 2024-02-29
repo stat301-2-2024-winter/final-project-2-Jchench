@@ -10,7 +10,6 @@ library(naniar)
 tidymodels_prefer()
 
 # load results
-load(here("results/drop_out_split.rda"))
 load(here("results/drop_out_folds.rda"))
 
 # load recipes

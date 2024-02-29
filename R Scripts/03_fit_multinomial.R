@@ -43,4 +43,3 @@ fit_multinomial <-
 
 # save out
 save(fit_multinomial, file = here("results/fit_multinomial.rda"))
-

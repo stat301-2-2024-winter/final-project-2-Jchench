@@ -47,7 +47,8 @@ baseline_recipe_trees <-
   step_normalize(all_numeric_predictors())
 
 # prep and bake
-prep(baseline_recipe_trees) |> 
+baseline_check_trees <- 
+  prep(baseline_recipe_trees) |> 
   bake(new_data = NULL)
 
 # Feature Engineered recipe ----
@@ -89,4 +90,7 @@ trees_recipe_prep_bake <-
   bake(new_data = NULL)
 
 # save out recipes ----
-save(baseline_recipe_nb, baseline_recipe, baseline_recipe_trees, file = here("results/baseline_recipes.rda"))
+save(baseline_recipe_nb, baseline_recipe, baseline_recipe_trees, 
+     file = here("results/baseline_recipes.rda"))
+
+save(main_recipe, main_recipe_trees, file = here("results/recipes.rda"))

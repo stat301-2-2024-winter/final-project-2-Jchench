@@ -11,7 +11,6 @@ library(xgboost)
 tidymodels_prefer()
 
 # load results
-load(here("results/drop_out_split.rda"))
 load(here("results/drop_out_folds.rda"))
 
 # load recipes
@@ -42,7 +41,8 @@ boost_workflow <-
 # hyperparameter tuning values
 boost_params <- 
   extract_parameter_set_dials(boost_spec) |> 
-  update(mtry = mtry(range = c(1, 34))) |> 
+  update(mtry = mtry(range = c(1, 225))) |> 
+  update(min_n = min_n(raneg = c(2, 15))) |> 
   update(learn_rate = learn_rate(range = c(-5, -0.2)))
 
 boost_grid <- 
