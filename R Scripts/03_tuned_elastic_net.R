@@ -50,6 +50,12 @@ tuned_elastic <-
             grid = elastic_grid,
             control = control_grid(save_workflow = TRUE))
 
+# autoplot
+tuned_elastic |> 
+  autoplot(metric = "roc_auc")
+
+# interpret --> inverse relationship between roc_auc and penalty, closer it is to the ridge models, the better it performed
+
 # save out
 save(tuned_elastic, file = here("results/tuned_elastic.rda"))
 

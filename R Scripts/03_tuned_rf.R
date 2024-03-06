@@ -52,5 +52,9 @@ tuned_rf <-
             grid = rf_grid,
             control = control_grid(save_workflow = TRUE))
 
+# autoplot
+tuned_rf |> 
+  autoplot(metric = "roc_auc")
+
 # save out
 save(tuned_rf, file = here("results/tuned_rf.rda"))

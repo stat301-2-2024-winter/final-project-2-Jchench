@@ -55,5 +55,9 @@ tuned_boost <-
             grid = boost_grid,
             control = control_grid(save_workflow = TRUE))
 
+# autoplot
+tuned_boost |> 
+  autoplot(metric = "roc_auc")
+
 # save out
 save(tuned_boost, file = here("results/tuned_boost.rda"))

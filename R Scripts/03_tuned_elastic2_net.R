@@ -50,6 +50,10 @@ tuned_elastic2 <-
             grid = elastic_grid,
             control = control_grid(save_workflow = TRUE))
 
+# autoplot
+tuned_elastic2 |> 
+  autoplot(metric = "roc_auc")
+
 # save out
 save(tuned_elastic2, file = here("results/tuned_elastic2.rda"))
 

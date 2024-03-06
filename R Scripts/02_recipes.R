@@ -83,8 +83,6 @@ main_recipe_trees <-
   step_normalize(all_numeric_predictors()) |> 
   step_corr(all_predictors())
 
-# step_corr(all_predictors())
-
 trees_recipe_prep_bake <- 
   prep(main_recipe_trees) |> 
   bake(new_data = NULL)
