@@ -42,6 +42,6 @@ set.seed(301)
 final_fit <- fit(final_wflow, drop_out_train)
 
 # save out
-save(final_fit, file = here("results/final_fit"))
+save(final_fit, file = here("results/final_fit.rda"))
 save(best_rf_param , file = here("results/best_bt_param.rda"))
 

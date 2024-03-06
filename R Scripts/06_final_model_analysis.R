@@ -37,26 +37,27 @@ pred_final_fit <-
   select(target) |> 
   bind_cols(predict(final_fit, drop_out_test))
 
-accuracy(pred_final_fit, target, .pred_class)
+# accuracy
+
+pred_accuracy <- 
+  accuracy(pred_final_fit, target, .pred_class)
 
 # roc_auc
 
 pred_prod <- 
   predict(final_fit, drop_out_test, type = "prob")
 
-pred_prob <- pred_prod |> 
+pred_prob <- 
+  pred_prod |> 
   bind_cols(pred_final_fit)
-
-save(metrics_final_fit, file = here("results/metrics_final_fit.rda"))
-
 
 pred_curve <- 
   roc_curve(pred_prob, target, c(.pred_Dropout, .pred_Enrolled, .pred_Graduate)) |> 
   autoplot()
-# visualize results
 
 # confusion matrix
 
 predict_conf <- 
   conf_mat(pred_final_fit, target, .pred_class)
 
+save(pred_accuracy, pred_curve, predict_conf, file = here("results/fina_metrics.rda"))
