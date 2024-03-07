@@ -18,35 +18,163 @@ execute:
 from: markdown+emoji 
 ---
 
-::: {.callout-tip icon=false}
-
+::: {.callout-tip icon="false"}
 ## Github Repo Link
 
 [My Repo Link](https://github.com/stat301-2-2024-winter/final-project-2-Jchench.git)
-
 :::
+
+```{r}
+#| echo: false
+
+# loading packages
+library(tidyverse)
+library(naniar)
+library(here)
+library(tidymodels)
+
+# reading in data
+drop_out_data <- 
+  read_rds(here("data/dropout_data_cleaned"))
+```
 
 ## Introduction
 
-Introduce your problem(s)/objective(s). Discuss why you are trying to predict this variable (motivation). Why is this useful? Describe the data source(s) you will use to build a predictive model. If you are obtaining information from websites you should site those in your References.
+### Prediction Problem
+
+The prediction problem that I am focusing on for this project is a **classification problem** and I'm looking to identify whether or not a student has dropped out of college at the end of a school year (2 semesters). I think having this prediction model would be useful for this problem because it will also help indicate factors that might make a student more at risk of dropping out.
+
+The target variable we are looking at identifies a student's academic status, which has three classes indicating whether a student is currently enrolled, graduated, or has dropped out of college.
+
+### Data source
+
+The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) that I'm using is from UC Irvine's Machine Learning Repository. This dataset was created by a number of authors, using information from higher education institution (acquired from several disjoint databases) related to students enrolled in different undergraduate degrees. [^1]
+
+[^1]: Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2021). Predict students' dropout and academic success. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.
+
+\*This data was mainly taken from schools in Portugal.
 
 ## Data overview & quality
 
-At minimum the response variable should be explored and analyzed in detail. Along with an inspection of the data for missingness and severe class imbalance of categorical data. The previous analyses should be conducted on the entire dataset.
+The dataset includes 37 variables in total: 16 categorical variables and 21 numeric variables. This dataset also has 4424 observations with each one representing a student.
 
-Further exploration such as exploring relationships and transformations should be conducted on either a standalone dataset used only for an EDA or some portion of the training dataset from the initial split (can put it back into the training set when building models). Data from the final testing dataset (performance dataset) should not be used for this. This is a key step in feature engineering. A thorough Exploratory Data Analysis might be called for, especially if the data is completely new to you, but make sure it is not completed on the entire dataset! Such an EDA could be put in an appendix and only a short summary could be discussed in this section.
+### Inspection of missingness and class imbalance:
+
+```{r}
+#| echo: false
+#| label: fig-missing
+#| fig-cap: "Number of missing values for each variable"
+
+gg_miss_var(drop_out_data)
+```
+
+As we can see from @fig-missing, there are fortunately no missing values for variables in this dataset.
+
+```{r}
+#| echo: false
+#| label: fig-imbalance
+#| fig-cap: "Distribution of classes within the target variable"
+
+drop_out_data |> 
+  ggplot(aes(x = target)) +
+  geom_bar()
+```
+
+We can see from @fig-imbalance, the distribution of the target variable is relatively imbalanced with significantly more students graduating compared to dropping out or currently enrolling. Thus, it would be helpful to use strata when splitting the data into training and learning.
+
+### Conclusions from EDA
+
+The main insights that can be generated from the EDA are that there is also a pretty strong positive correlation between admission grade and previous qualification grade. This means that students who were doing well academically before college also tend to do well academically during college. Curricular units grades from the first semester are pretty positively correlated with curricular units grades from the second semester as well. This suggests that there could be possible interactions between the number of curricular units approved and grade earned for a student's first and second semester. Additionally, variables that would be important to look at are a student's gender, debtor status, whether or not their tuition is up to date, and whether or not they are a scholarship holder.
+
+\* A more detailed EDA for the training dataset is in Appendix: EDA
 
 ## Methods
 
-Should cover the data splitting procedure and clearly identify what type of prediction problem it is. State and describe the model types you will be fitting. Describe any parameters that will be tuned. Describe what recipes will be used. Describe the resampling technique used. In some cases an extended discussion about recipe variations might be useful. Especially if students are using recipe variation to try and explore the predictive importance of certain variables. Explain the metric that will be used to compare and ultimately used to select a final model.
+The prediction problem I'm looking at is **classification**, so I will be using the **ROC AUC** metric to evaluate my results. My target variable also has quite a bit of class imbalance and has more than two factor levels, which makes **ROC AUC** a more optimal metric because it measures both sensitivity and specificity and accounts for type I and type II errors.
+
+### Data splitting and resampling procedure
+
+Since my dataset has around 4424 observations, which is on the smaller end, I did a 75-25 split so that we can get more consistent and reliable estimates without running into issues of overfitting. This means that there will be around 3316 observations in the training dataset and 1108 observations in the testing dataset.
+
+I also used vfold cross-validation to resample the training data. I used 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large.
+
+### Model types and recipes:
+
+Since my prediction problem is a **classification** problem, I plan on using these models
+
+-   Naive Bayes (baseline model)
+
+-   Multinomial (because my target variable has 3 factor levels)
+
+-   Elastic Net
+
+-   K-Nearest Neighbor
+
+-   Random Forest
+
+-   Boosted Tree.
+
+The two recipes I will use are a baseline and another one that is feature engineered according to my EDA conclusions.
+
+Baseline recipe includes:
+
+-   Predict the target variable with all other variables
+-   Remove ID/ non-relevant variables like application order and application mode
+-   Encode categorical predictors (for parametric models, not applicable for Naive Bayes)
+    -   One-hot = TRUE (for tree-based models)
+-   Filter out variables have have zero variance
+-   Center & scale all predictors
+
+Feature-engineered recipe includes:
+
+-   Predict the target variable with father's qualification, mother's qualification, admission grade, previous qualification grade, gender, debtor status, scholarship status, first semester curricular units grade, and second semester curricular units grades
+
+-   Encode categorical predictors
+
+    -   One-hot = TRUE (for tree-based models)
+
+-   Add interactions for (only for parametric models)
+
+    -   admission grade and previous qualification grade
+
+    -   father's qualification and mother's qualification
+
+    -   first semester curricular units grade and second semester curricular units grades
+
+-   Filter out variables have have zero variance
+
+-   Center & scale all predictors
+
+-   Filter out variables that have large or absolute correlations with other variables (for tree-based models)
 
 ## Model Building & Selection
 
 Should reiterate the metric that will be used to compare models and determine which will be the final/winning model. Include a table of the best performing model results. Review and analysis of tuning parameters should happen here. Should further tuning be explored? Or how should tuning be adjusted when fitting data like this in the future. This would be a good section to describe what the best parameters were for each model type. Could include a discussion comparing any systematic differences in performance between model types or recipes. If variations in recipes were used to explore predictive importance of certain variables, then it should be discussed here. The section will likely end with the selection of the final/winning model (provide your reasoning). Was it surprising or not surprising that this particular model won? Explain.
 
+::: {.callout-tip icon="false"}
+## Evaluation Metric
+The metric that I used to evaluate the performance of these models is **ROC AUC**. The closer the ROC AUC value of a model is to 1, the better it performed.
+:::
+
+```{r}
+#| echo: false
+#| label: tbl-modresults
+#| tbl-cap: "Model result ROC AUC comparisons"
+
+load(here("results/results_table.rda"))
+
+results_table |> 
+  knitr::kable()
+```
+As we can see from @tbl-modresults, the boosted tree model performed the best.
+
 ## Final Model Analysis
 
 This is where you fit your final/winning model to the testing data. Assess the final model’s performance with at least the metric used to determine the winning model, but it is also advisable to use other performance metrics (especially ones that might be easier to communicate/understand). Should include an exploration of predictions vs the true values (graph) or a confusion matrix (table). Remember to consider the scale of your outcome variable at this time — did you transform the target variable? If a transformation was used, then you should consider conducting analyses on both the original and transformed scale of the target variable. Is the model any good? It might be the best of the models you tried, but does the effort of building a predictive model really pay off — is it that much better than a baseline/null model? Were there any features of the model you selected that make it the best (e.g. fits nonlinearity well)?
+
+### Accuracy
+
+
 
 ## Conclusion
 
@@ -54,15 +182,8 @@ State any conclusions or discoveries/insights. This is a great place for future 
 
 ## References — if needed
 
-
-
 ## Appendix: technical info — if needed
-
-
 
 ## Appendix: EDA — if needed
 
-
-
 ## Appendix: extras — if needed
-

@@ -111,3 +111,5 @@ results_table <-
   select(model, .metric, mean, std_err) |> 
   arrange(desc(mean))
 
+save(results_table, file = here("results/results_table.rda"))
+
