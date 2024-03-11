@@ -1,5 +1,3 @@
-# Defining recipes
-
 # load packages ----
 library(tidyverse)
 library(tidymodels)
@@ -63,6 +61,15 @@ predict_knn2 <-
   slice_max(mean) |> 
   mutate(model = "k nearest neighbor2")
 
+# autoplot
+autoplot_knn <- 
+  tuned_knn |> 
+  autoplot(metric = "roc_auc")
+
+autoplot_knn2 <- 
+  tuned_knn2 |> 
+  autoplot(metric = "roc_auc")
+
 # elastic net
 predict_elastic <- 
   tuned_elastic |> 
@@ -75,6 +82,15 @@ predict_elastic2 <-
   show_best("roc_auc") |> 
   slice_max(mean) |> 
   mutate(model = "elastic net2")
+
+# autoplot
+autoplot_en <- 
+  tuned_elastic |> 
+  autoplot(metric = "roc_auc")
+
+autoplot_en2 <- 
+  tuned_elastic2 |> 
+  autoplot(metric = "roc_auc")
 
 # rf
 predict_rf <- 
@@ -89,6 +105,15 @@ predict_rf2 <-
   slice_max(mean) |> 
   mutate(model = "random forest2")
 
+# autoplot
+autoplot_rf <- 
+  tuned_rf |> 
+  autoplot(metric = "roc_auc")
+
+autoplot_rf2 <- 
+  tuned_rf2 |> 
+  autoplot(metric = "roc_auc")
+
 # bt
 predict_boost <- 
   tuned_boost |> 
@@ -102,6 +127,15 @@ predict_boost2 <-
   slice_max(mean) |> 
   mutate(model = "boosted tree2")
 
+# autoplot
+autoplot_boost <- 
+  tuned_boost |> 
+  autoplot(metric = "roc_auc")
+
+autoplot_boost2 <- 
+  tuned_boost2 |> 
+  autoplot(metric = "roc_auc")
+
 # make a table
 results_table <- 
   predict_naive |> 
@@ -111,5 +145,7 @@ results_table <-
   select(model, .metric, mean, std_err) |> 
   arrange(desc(mean))
 
-save(results_table, file = here("results/results_table.rda"))
+save(results_table, autoplot_knn, autoplot_knn2, 
+     autoplot_en, autoplot_en2, autoplot_rf, autoplot_rf2,
+     autoplot_boost, autoplot_boost2, file = here("results/results_table.rda"))
 

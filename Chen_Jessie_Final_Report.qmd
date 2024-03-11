@@ -86,7 +86,7 @@ We can see from @fig-imbalance, the distribution of the target variable is relat
 
 The main insights that can be generated from the EDA are that there is also a pretty strong positive correlation between admission grade and previous qualification grade. This means that students who were doing well academically before college also tend to do well academically during college. Curricular units grades from the first semester are pretty positively correlated with curricular units grades from the second semester as well. This suggests that there could be possible interactions between the number of curricular units approved and grade earned for a student's first and second semester. Additionally, variables that would be important to look at are a student's gender, debtor status, whether or not their tuition is up to date, and whether or not they are a scholarship holder.
 
-\* A more detailed EDA for the training dataset is in Appendix: EDA
+\* A more detailed EDA for the training dataset is in Appendix I: EDA
 
 ## Methods
 
@@ -94,7 +94,7 @@ The prediction problem I'm looking at is **classification**, so I will be using 
 
 ### Data splitting and resampling procedure
 
-Since my dataset has around 4424 observations, which is on the smaller end, I did a 75-25 split so that we can get more consistent and reliable estimates without running into issues of overfitting. This means that there will be around 3316 observations in the training dataset and 1108 observations in the testing dataset.
+Since my dataset has around 4424 observations, which is on the smaller end. I did a 75-25 split so that we can get more consistent and reliable estimates without running into issues of overfitting. This means that there will be around 3316 observations in the training dataset and 1108 observations in the testing dataset.
 
 I also used vfold cross-validation to resample the training data. I used 5 partitions (v = 5) and 10 repeats since my dataset isn't incredibly large.
 
@@ -116,7 +116,7 @@ Since my prediction problem is a **classification** problem, I plan on using the
 
 The two recipes I will use are a baseline and another one that is feature engineered according to my EDA conclusions.
 
-Baseline recipe includes:
+#### Baseline recipe includes:
 
 -   Predict the target variable with all other variables
 -   Remove ID/ non-relevant variables like application order and application mode
@@ -125,7 +125,7 @@ Baseline recipe includes:
 -   Filter out variables have have zero variance
 -   Center & scale all predictors
 
-Feature-engineered recipe includes:
+#### Feature-engineered recipe includes:
 
 -   Predict the target variable with father's qualification, mother's qualification, admission grade, previous qualification grade, gender, debtor status, scholarship status, first semester curricular units grade, and second semester curricular units grades
 
@@ -149,12 +149,72 @@ Feature-engineered recipe includes:
 
 ## Model Building & Selection
 
-Should reiterate the metric that will be used to compare models and determine which will be the final/winning model. Include a table of the best performing model results. Review and analysis of tuning parameters should happen here. Should further tuning be explored? Or how should tuning be adjusted when fitting data like this in the future. This would be a good section to describe what the best parameters were for each model type. Could include a discussion comparing any systematic differences in performance between model types or recipes. If variations in recipes were used to explore predictive importance of certain variables, then it should be discussed here. The section will likely end with the selection of the final/winning model (provide your reasoning). Was it surprising or not surprising that this particular model won? Explain.
-
 ::: {.callout-tip icon="false"}
 ## Evaluation Metric
 The metric that I used to evaluate the performance of these models is **ROC AUC**. The closer the ROC AUC value of a model is to 1, the better it performed.
 :::
+
+### Brief Tuning Parameter Analysis:
+
+Here are the tuning parameters that produced the best ROC AUC values for each model:
+
+\*More detailed plot analyses in Appendix II
+
+For the KNN model, there was only 1 parameter that required tuning:
+```{r}
+#| echo: false
+#| label: tbl-knntune
+#| tbl-cap: "Best KNN Tuning Parameters"
+
+load(here("results/tuned_knn.rda"))
+
+select_best(tuned_knn) |> 
+  knitr::kable()
+```
+As we can see from @tbl-knntune, the best tuning parameter for the number of neighbors is 15 for the KNN model.
+
+For the Elastic Net model, there were 2 parameters that required tuning:
+```{r}
+#| echo: false
+#| label: tbl-entune
+#| tbl-cap: "Best Random Forest Tuning Parameters"
+
+load(here("results/tuned_elastic.rda"))
+
+select_best(tuned_elastic) |> 
+  knitr::kable()
+```
+As we can see from @tbl-entune, the best tuning parameter for the mixture is 0.5 and the best penalty term was 0.1 (closer to a ridge model).
+
+For the Random Forest model, there were 2 parameters that required tuning:
+```{r}
+#| echo: false
+#| label: tbl-rftune
+#| tbl-cap: "Best Random Forest Tuning Parameters"
+
+load(here("results/tuned_rf.rda"))
+
+select_best(tuned_rf) |> 
+  knitr::kable()
+```
+As we can see from @tbl-rftune, the best tuning parameter for the number of predictors that will be randomly sampled at each split is 57 and the minimum number of data points in a node for each split is 8.
+
+For the Boosted Tree model, there were 3 parameter that required tuning:
+```{r}
+#| echo: false
+#| label: tbl-boosttune
+#| tbl-cap: "Best Boosted Tree Tuning Parameters"
+
+load(here("results/tuned_boost.rda"))
+
+select_best(tuned_boost) |> 
+  knitr::kable()
+```
+As we can see from @tbl-boosttune, the best tuning parameter for the number of predictors that will be randomly sampled at each split is 225 (maximum number of predictors possible after dummy-encoding), the minimum number of data points in a node for each split is 8, and the best learn rate is around 0.631.
+
+In conclusion, these were the tuning parameters that generated the best model results. I think further tuning could be explored particulalry with the tree-based models in terms of the number of trees since I left that argument as the default.
+
+### Analysis of ROC AUC results
 
 ```{r}
 #| echo: false
@@ -166,24 +226,204 @@ load(here("results/results_table.rda"))
 results_table |> 
   knitr::kable()
 ```
-As we can see from @tbl-modresults, the boosted tree model performed the best.
+As we can see from @tbl-modresults, the boosted tree model performed the best because it has a ROC AUC value that is closest to 1. This means that .... We can also see that models that used the kitchen sink baseline recipe typically performed better than the models that used the feature engineered recipe (end with suffix 2).
 
 ## Final Model Analysis
 
 This is where you fit your final/winning model to the testing data. Assess the final model’s performance with at least the metric used to determine the winning model, but it is also advisable to use other performance metrics (especially ones that might be easier to communicate/understand). Should include an exploration of predictions vs the true values (graph) or a confusion matrix (table). Remember to consider the scale of your outcome variable at this time — did you transform the target variable? If a transformation was used, then you should consider conducting analyses on both the original and transformed scale of the target variable. Is the model any good? It might be the best of the models you tried, but does the effort of building a predictive model really pay off — is it that much better than a baseline/null model? Were there any features of the model you selected that make it the best (e.g. fits nonlinearity well)?
 
+### ROC AUC Analysis
+
+```{r}
+#| echo: false
+#| label: fig-rocauc
+#| fig-cap: "Final model ROC AUC result"
+
+load(here("results/fina_metrics.rda"))
+
+pred_curve
+```
+As we can see from @fig-rocauc, the ROC AUC
+
 ### Accuracy
 
+```{r}
+#| echo: false
+#| label: tbl-accuracy
+#| tbl-cap: "Final model accuracy result"
 
+load(here("results/fina_metrics.rda"))
+
+pred_accuracy |> 
+  knitr::kable()
+```
+
+As we can see from @tbl-accuracy, the accuracy for the final model is around 0.795. This means that the model was able to predict around 79.5% of the true values in the testing dataset.
+
+### Confusion Matrix
+
+```{r}
+#| echo: false
+#| label: fig-confmat
+#| fig-cap: "Final model confusion matrix"
+
+load(here("results/fina_metrics.rda"))
+
+predict_conf
+```
+The confusion matrix (@fig-confmat) calculates observed and predicted classes. In this case, the matrix shows the number of dropouts, graduates, and currently enrolled students that the model predicted, along with false positive and negatives. The quadrant Dropout, Dropout corresponds to when the model correctly predicted the number of dropout, which is 279 times. 
+
+There are also a couple quadrants that indicate false positives. The quadrant Dropout, Graduate corresponds to the number of times the model predicted a student had dropped out when they actually graduated, which is 14 times. The quadrant Dropout, Enrolled corresponds to the number of times the model predicted a student has dropped out when they actually are still enrolled, which is 50 times. 
+
+There are also a couple of quadrants that indicate false negatives. The quadrant Graduate, Dropout corresponds to the number of times the model predicted a student had graduated when they actually dropped out, which is 39 times. The quadrant Enrolled, Dropout corresponds to the number of times the model predicted a student was enrolled when they actually dropped out, which is 38 times.
+
+Overall, the model seemed to do pretty well at predicting the number of true dropouts and true graduates, which is a good sign since the class I'm mainly concerned with predicting accurately is the dropout class.
 
 ## Conclusion
 
-State any conclusions or discoveries/insights. This is a great place for future work, new research questions, and next steps.
+In conclusion... I think a lot of improvements could also be made in terms of my recipes. Since my feature engineered recipe didn't necessarily work as well as my kitchen sink baseline recipe, I think I could do some more in-depth exploratory data analysis with all of the categorical variables in order to figure out which variables could be removed. I could have also done a bit more tuning for some of my models, particularly the tree-based ones since I left the number of trees the default.
 
-## References — if needed
+## References
 
-## Appendix: technical info — if needed
+Dataset:
 
-## Appendix: EDA — if needed
+Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2021). Predict students' dropout and academic success. UCI Machine Learning Repository. https://doi.org/10.24432/C5MC89.
 
-## Appendix: extras — if needed
+## Appendix I: EDA
+
+Since my dataset isn't very large, I'm going to perform an EDA on my training dataset to see if there are any insights that can be generated to inform my recipe steps.
+
+First, I'll look at a correlation matrix across my numeric variables:
+
+```{r}
+#| echo: false
+
+library(tidyverse)
+library(here)
+load(here("results/drop_out_split.rda"))
+
+drop_out_train |> 
+  select(where(is.numeric))|> 
+  cor(use = "pairwise.complete.obs") |> 
+  ggcorrplot::ggcorrplot()
+```
+
+Some of the main insights that can be generated are that there is a strong negative relationship between gdp and unemployment rate. However, I personally don't think that these are important variables to look at since they mostly pertain to the national economy rather than individual students (I might not include them in the recipe). There is also a pretty strong positive correlation between admission grade and previous qualification grade. This means that students who were doing well academically before college also tend to do well academically during college. The number of curricular units approved and curricular unit grades for a student from the first semester is also pretty positively correlated with the curricular units approved and curricular unit grades from the second semester. This suggests that there could be possible interactions between the number of curricular units approved and grade earned for a student's first and second semester.
+
+Next, I decided to look at parents' qualifications:
+
+```{r}
+#| echo: false
+
+# mother's qualifications and father's qualifications
+drop_out_train |> 
+  ggplot(aes(x = mothers_qualification)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90))
+
+drop_out_train |> 
+  ggplot(aes(x = fathers_qualification)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+As we can see here, the distribution of qualifications for a student's mother and father are pretty similar. This suggests that there are possible interactions between these two variables.
+
+Next, I decided to look at gender and whether or not it is correlated with the target variable:
+
+```{r}
+#| echo: false
+
+# gender distribution within target
+drop_out_train |> 
+  ggplot(aes(x = target, fill = gender)) +
+  geom_bar()
+```
+
+The bar graph shows that there are a couple of discrepancies in the gender proportion between these three target outcomes. It looks like a larger proportion of female students tend to graduate and are enrolled compared to male students. It also looks like the gender distribution for dropping out is pretty evenly split.
+
+Next, I looked at variables that were indicative of socio-economic class:
+
+```{r}
+#| echo: false
+
+# socio-economic class
+drop_out_train |> 
+  ggplot(aes(x = target, fill = debtor)) +
+  geom_bar()
+
+drop_out_train |> 
+  ggplot(aes(x = target, fill = tuition_fees_up_to_date)) +
+  geom_bar()
+
+drop_out_train |> 
+  ggplot(aes(x = target, fill = scholarship_holder)) +
+  geom_bar()
+```
+
+Overall, it looks like a larger proportion of students who are debtors and don't have their tuition fees up to date tend to drop out compared to the students who are debtors and don't have their tuition fees up to date in the other two other outcome categories. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
+
+After performing a short EDA, I plan on creating a recipe that removes unrelated variables such as unemployment rate, GDP, and inflation (wasn't really correlated with any other variables). A couple variables that would be important to look at are a student's gender, debtor status, whether or not their tuition is up to date, and whether or not they are a scholarship holder. I also plan on creating interaction variables between first semester curricular units and second semester curricular units, admission grade and previous qualification grade, and father and mother's qualifications. I also plan on adding a `step_corr` for my tree-based models to potentially remove variables that have large absolute correlations with other variables.
+
+## Appendix II: tuning parameter analysis
+
+```{r}
+#| echo: false
+
+load(here("results/results_table.rda"))
+```
+
+The models that need tuning are: K-Nearest Neighbor, Elastic Net, Random Forest, and Boosted Tree.
+
+### K-Nearest Neighbor tuning parameters:
+
+Let's take a look at the tuning parameters for the KNN model:
+```{r}
+#| echo: false
+#| label: fig-plotknn
+#| fig-cap: "KNN Autoplot"
+
+autoplot_knn
+```
+
+As we can see from @fig-plotknn, the ROC AUC value for the KNN model increases as the number of nearest neighbors increases. This means that the best tuning parameters would have a number of nearest neighbors that is more than 12.
+
+### Elastic Net tuning parameters:
+
+Let's take a look at the tuning parameters for the Elastic Net model:
+```{r}
+#| echo: false
+#| label: fig-ploten
+#| fig-cap: "Elastic Net Autoplot"
+
+autoplot_en
+```
+
+As we can see from @fig-ploten, the ROC AUC value for the Elastic Net model is generally higher when the penalty is closet to 0. This means that a ridge model will generate the best results.
+
+### Random Forest tuning parameters:
+
+Let's take a look at the tuning parameters for the Elastic Net model:
+```{r}
+#| echo: false
+#| label: fig-plotrf
+#| fig-cap: "Random Forest Autoplot"
+
+autoplot_rf
+```
+
+As we can see from @fig-plotrf, the ROC AUC value doesn't seem to differ too much across minimal node size. However, it does seem like the most optimal number of randomly selected predictors would be around 50 since it produced the highest ROC AUC value.
+
+### Boosted Tree tuning parameters:
+
+Let's take a look at the tuning parameters for the Elastic Net model:
+```{r}
+#| echo: false
+#| label: fig-plotbt
+#| fig-cap: "Boosted Tree Autoplot"
+
+autoplot_boost
+```
+
+As we can see from @fig-plotbt, the ROC AUC value doesn't seem to differ too much across minimal node size. However, it does seem like the most optimal learn rate would be around 0.631 since it generally produced higher ROC AUC values.
+
