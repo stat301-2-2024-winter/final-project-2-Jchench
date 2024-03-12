@@ -158,7 +158,7 @@ The metric that I used to evaluate the performance of these models is **ROC AUC*
 
 Here are the tuning parameters that produced the best ROC AUC values for each model:
 
-\*More detailed plot analyses in Appendix II
+\* More detailed plot analyses in Appendix II
 
 For the KNN model, there was only 1 parameter that required tuning:
 ```{r}
@@ -226,7 +226,7 @@ load(here("results/results_table.rda"))
 results_table |> 
   knitr::kable()
 ```
-As we can see from @tbl-modresults, the boosted tree model performed the best because it has a ROC AUC value that is closest to 1. This means that .... We can also see that models that used the kitchen sink baseline recipe typically performed better than the models that used the feature engineered recipe (end with suffix 2).
+As we can see from @tbl-modresults, the boosted tree model performed the best because it has a ROC AUC value that is closest to 1. This means that it has pretty good sensitivity and specificity (low false positive rate). We can also see that models that used the kitchen sink baseline recipe typically performed better than the models that used the feature engineered recipe (end with suffix 2).
 
 ## Final Model Analysis
 
@@ -243,7 +243,7 @@ load(here("results/fina_metrics.rda"))
 
 pred_curve
 ```
-As we can see from @fig-rocauc, the ROC AUC
+As we can see from @fig-rocauc, the ROC AUC curve for the dropout class is pretty good. It's mostly above the random classifier line, which means that the predictions from the model are at least better than random guesses (0.5). The ROC AUC curve for the other two classes are not as good. In particular for the regions where specificity is less than 0.75, sensitivity is also quite low and the predictions tend to be worse than random guesses. Since I'm mainly focused on looking at dropout predictions, I'm not too concerned with how badly the model performed in predicting the other two classes. However, there definitely is room for improvement.
 
 ### Accuracy
 
@@ -264,14 +264,15 @@ As we can see from @tbl-accuracy, the accuracy for the final model is around 0.7
 
 ```{r}
 #| echo: false
-#| label: fig-confmat
-#| fig-cap: "Final model confusion matrix"
+#| label: tbl-confmat
+#| tbl-cap: "Final model confusion matrix"
 
 load(here("results/fina_metrics.rda"))
 
-predict_conf
+as.data.frame.matrix(predict_conf$table) |> 
+  knitr::kable()
 ```
-The confusion matrix (@fig-confmat) calculates observed and predicted classes. In this case, the matrix shows the number of dropouts, graduates, and currently enrolled students that the model predicted, along with false positive and negatives. The quadrant Dropout, Dropout corresponds to when the model correctly predicted the number of dropout, which is 279 times. 
+The confusion matrix (@tbl-confmat) calculates observed and predicted classes. In this case, the matrix shows the number of dropouts, graduates, and currently enrolled students that the model predicted, along with false positive and negatives. The quadrant Dropout, Dropout corresponds to when the model correctly predicted the number of dropout, which is 279 times. 
 
 There are also a couple quadrants that indicate false positives. The quadrant Dropout, Graduate corresponds to the number of times the model predicted a student had dropped out when they actually graduated, which is 14 times. The quadrant Dropout, Enrolled corresponds to the number of times the model predicted a student has dropped out when they actually are still enrolled, which is 50 times. 
 
@@ -293,10 +294,14 @@ Realinho,Valentim, Vieira Martins,Mónica, Machado,Jorge, and Baptista,Luís. (2
 
 Since my dataset isn't very large, I'm going to perform an EDA on my training dataset to see if there are any insights that can be generated to inform my recipe steps.
 
+### Numeric variables:
+
 First, I'll look at a correlation matrix across my numeric variables:
 
 ```{r}
 #| echo: false
+#| label: fig-corr
+#| fig-cap: "Correlation coefficient plot with numeric variables"
 
 library(tidyverse)
 library(here)
@@ -308,18 +313,16 @@ drop_out_train |>
   ggcorrplot::ggcorrplot()
 ```
 
-Some of the main insights that can be generated are that there is a strong negative relationship between gdp and unemployment rate. However, I personally don't think that these are important variables to look at since they mostly pertain to the national economy rather than individual students (I might not include them in the recipe). There is also a pretty strong positive correlation between admission grade and previous qualification grade. This means that students who were doing well academically before college also tend to do well academically during college. The number of curricular units approved and curricular unit grades for a student from the first semester is also pretty positively correlated with the curricular units approved and curricular unit grades from the second semester. This suggests that there could be possible interactions between the number of curricular units approved and grade earned for a student's first and second semester.
+As shown in @fig-corr, some of the main insights that can be generated are that there is a strong negative relationship between gdp and unemployment rate. However, I personally don't think that these are important variables to look at since they mostly pertain to the national economy rather than individual students (I might not include them in the recipe). There is also a pretty strong positive correlation between admission grade and previous qualification grade. This means that students who were doing well academically before college also tend to do well academically during college. The number of curricular units approved and curricular unit grades for a student from the first semester is also pretty positively correlated with the curricular units approved and curricular unit grades from the second semester. This suggests that there could be possible interactions between the number of curricular units approved and grade earned for a student's first and second semester.
 
-Next, I decided to look at parents' qualifications:
+### Parents' Education level:
+
+Next, I decided to look at parents' education level:
 
 ```{r}
 #| echo: false
-
-# mother's qualifications and father's qualifications
-drop_out_train |> 
-  ggplot(aes(x = mothers_qualification)) +
-  geom_bar() +
-  theme(axis.text.x = element_text(angle = 90))
+#| label: fig-father
+#| fig-cap: "Distribution of student's father's highest level of education"
 
 drop_out_train |> 
   ggplot(aes(x = fathers_qualification)) +
@@ -327,12 +330,30 @@ drop_out_train |>
   theme(axis.text.x = element_text(angle = 90))
 ```
 
-As we can see here, the distribution of qualifications for a student's mother and father are pretty similar. This suggests that there are possible interactions between these two variables.
+As we can see from @fig-father, most student's fathers seem to have an education level of "basic education 1st cycle" (4 - 5 years of schooling). This is followed by "basic education 3rd cycle" (9 - 11 years of schooling) and "secondary education" (12 years of schooling).
 
+```{r}
+#| echo: false
+#| label: fig-mother
+#| fig-cap: "Distribution of student's mother's qualifications"
+
+drop_out_train |> 
+  ggplot(aes(x = mothers_qualification)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+As we can see from @fig-mother, most student's mothers seem to have an education level of "secondary education" (12 years of schooling). This is followed by "basic education 1st cycle" (4 - 5 years of schooling) and "basic education 3rd cycle" (9 - 11 years of schooling). 
+
+In general, the distribution of education level for a student’s father and mother are pretty similar. This suggests that there are possible interactions between these two variables.
+
+### Gender:
 Next, I decided to look at gender and whether or not it is correlated with the target variable:
 
 ```{r}
 #| echo: false
+#| label: fig-gender
+#| fig-cap: "Gender and the target variable"
 
 # gender distribution within target
 drop_out_train |> 
@@ -340,28 +361,43 @@ drop_out_train |>
   geom_bar()
 ```
 
-The bar graph shows that there are a couple of discrepancies in the gender proportion between these three target outcomes. It looks like a larger proportion of female students tend to graduate and are enrolled compared to male students. It also looks like the gender distribution for dropping out is pretty evenly split.
+@fig-gender shows that there are a couple of discrepancies in the gender proportion between these three target outcomes. It looks like a larger proportion of female students tend to graduate and are enrolled compared to male students. It also looks like the gender distribution for dropping out is pretty evenly split.
+
+### Socio-economic class:
 
 Next, I looked at variables that were indicative of socio-economic class:
 
 ```{r}
 #| echo: false
+#| label: fig-socio
+#| fig-cap: "Socio-economic class analysis"
 
+library(patchwork)
 # socio-economic class
-drop_out_train |> 
+debt <- 
+  drop_out_train |> 
   ggplot(aes(x = target, fill = debtor)) +
-  geom_bar()
+  geom_bar() +
+  ylab(NULL)
 
-drop_out_train |> 
+fees <- 
+  drop_out_train |> 
   ggplot(aes(x = target, fill = tuition_fees_up_to_date)) +
-  geom_bar()
+  geom_bar() +
+  ylab(NULL)
 
-drop_out_train |> 
+scholarship <- 
+  drop_out_train |> 
   ggplot(aes(x = target, fill = scholarship_holder)) +
-  geom_bar()
+  geom_bar() +
+  ylab(NULL)
+
+(debt + fees)/ scholarship
 ```
 
-Overall, it looks like a larger proportion of students who are debtors and don't have their tuition fees up to date tend to drop out compared to the students who are debtors and don't have their tuition fees up to date in the other two other outcome categories. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
+As we can see from @fig-socio, it looks like overall a larger proportion of students who are debtors and don't have their tuition fees up to date tend to drop out compared to the students who are debtors and don't have their tuition fees up to date in the other two other outcome categories. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
+
+### Insights for feature-engineering:
 
 After performing a short EDA, I plan on creating a recipe that removes unrelated variables such as unemployment rate, GDP, and inflation (wasn't really correlated with any other variables). A couple variables that would be important to look at are a student's gender, debtor status, whether or not their tuition is up to date, and whether or not they are a scholarship holder. I also plan on creating interaction variables between first semester curricular units and second semester curricular units, admission grade and previous qualification grade, and father and mother's qualifications. I also plan on adding a `step_corr` for my tree-based models to potentially remove variables that have large absolute correlations with other variables.
 
