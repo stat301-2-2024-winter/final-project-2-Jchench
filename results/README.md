@@ -1,10 +1,21 @@
 ## RDAs:
 
+-   `recipes.rda`: contains all recipes
 -   `baseline_recipes.rda`: contains the kitchen sink recipe with variations for different models.
 -   `baseline_results_table.rda`: contains a table comparing the performance of the naive bayes vs. multinomial models.
+-   `results_table.rda`: contains a table comparing the performance all models fitted to resamples.
+-   `final_fit.rda`: fitted final model to training dataset
+-   `fina_metrics.rda`: final metrics for analysis of final model
 -   `drop_out_folds.rda`: contains the resamples for the training dataset.
 -   `drop_out_split.rda`: contains the testing and training data.
 -   `fit_multinomial.rda`: contains fitted multinomial model (using kitchen sink recipe).
+-   `fit_multinomial2.rda`: contains fitted multinomial model (using feature-engineered recipe).
 -   `fit_naive.rda`: contains fitted naive bayes model (using kitchen sink recipe).
--   `tuned_knn_rda`: contains tuned knn model (using kitchen sink recipe).
+-   `tuned_knn.rda`: contains tuned knn model (using kitchen sink recipe).
+-   `tuned_knn2.rda`: contains tuned knn model (using feature-engineered recipe).
 -   `tuned_rf.rda`: contains tuned random forest model (using kitchen sink recipe).
+-   `tuned_rf.rda`: contains tuned random forest model (using feature-engineered recipe).
+-   `tuned_boost.rda`: contains tuned boosted tree model (using kitchen sink recipe).
+-   `tuned_boost2.rda`: contains tuned boosted tree model (using feature-engineered recipe).
+-   `tuned_elastic.rda`: contains tuned elastic net (using kitchen sink recipe).
+-   `tuned_elastic2.rda`: contains tuned elastic net (using feature-engineered recipe).
