@@ -1,5 +1,5 @@
 ---
-title: "Final Report Title"
+title: "Predicting Student Dropouts"
 subtitle: |
   | Final Project Report
   | Data Science 2 with R (STAT 301-2)
@@ -228,6 +228,8 @@ results_table |>
 ```
 As we can see from @tbl-modresults, the boosted tree model performed the best because it has a ROC AUC value that is closest to 1. This means that it has pretty good sensitivity and specificity (low false positive rate). We can also see that models that used the kitchen sink baseline recipe typically performed better than the models that used the feature engineered recipe (end with suffix 2).
 
+Overall, it does seem worthwhile to build more complex models since the non-parametric models (random forest, boosted tree, k nearest neighbors) generally performed better than the parametric models. However, my feature-engineered recipe generally create worse-performing models than the baseline kitchen sink recipe.
+
 ## Final Model Analysis
 
 This is where you fit your final/winning model to the testing data. Assess the final model’s performance with at least the metric used to determine the winning model, but it is also advisable to use other performance metrics (especially ones that might be easier to communicate/understand). Should include an exploration of predictions vs the true values (graph) or a confusion matrix (table). Remember to consider the scale of your outcome variable at this time — did you transform the target variable? If a transformation was used, then you should consider conducting analyses on both the original and transformed scale of the target variable. Is the model any good? It might be the best of the models you tried, but does the effort of building a predictive model really pay off — is it that much better than a baseline/null model? Were there any features of the model you selected that make it the best (e.g. fits nonlinearity well)?
@@ -282,7 +284,7 @@ Overall, the model seemed to do pretty well at predicting the number of true dro
 
 ## Conclusion
 
-In conclusion... I think a lot of improvements could also be made in terms of my recipes. Since my feature engineered recipe didn't necessarily work as well as my kitchen sink baseline recipe, I think I could do some more in-depth exploratory data analysis with all of the categorical variables in order to figure out which variables could be removed. I could have also done a bit more tuning for some of my models, particularly the tree-based ones since I left the number of trees the default.
+In conclusion it seems that the boosted tree model paired with the baseline kitchen sink recipe performed the best when predicting whether or not a student has dropped out of college (around 79.5% accurate). I think a lot of improvements could also be made in terms of my recipes. Since my feature engineered recipe didn't necessarily work as well as my kitchen sink baseline recipe, I think I could do some more in-depth exploratory data analysis with all of the categorical variables in order to figure out which variables could be removed. I could have also done a bit more tuning for some of my models, particularly the tree-based ones since I left the number of trees the default.
 
 ## References
 
@@ -376,26 +378,35 @@ library(patchwork)
 # socio-economic class
 debt <- 
   drop_out_train |> 
+  mutate(debtor = factor(debtor, labels = c("No", "Yes"))) |> 
   ggplot(aes(x = target, fill = debtor)) +
   geom_bar() +
-  ylab(NULL)
+  ylab(NULL) +
+  xlab(NULL) +
+  labs(fill = "Debtor")
 
 fees <- 
   drop_out_train |> 
+  mutate(tuition_fees_up_to_date = factor(tuition_fees_up_to_date, labels = c("No", "Yes"))) |> 
   ggplot(aes(x = target, fill = tuition_fees_up_to_date)) +
   geom_bar() +
-  ylab(NULL)
+  ylab(NULL) +
+  xlab(NULL) +
+  labs(fill = "Tuition Fees Up To Date")
 
 scholarship <- 
   drop_out_train |> 
+  mutate(scholarship_holder = factor(scholarship_holder, labels = c("No", "Yes"))) |> 
   ggplot(aes(x = target, fill = scholarship_holder)) +
   geom_bar() +
-  ylab(NULL)
+  ylab(NULL) +
+  xlab(NULL) +
+  labs(fill = "Scholarship Holder")
 
 (debt + fees)/ scholarship
 ```
 
-As we can see from @fig-socio, it looks like overall a larger proportion of students who are debtors and don't have their tuition fees up to date tend to drop out compared to the students who are debtors and don't have their tuition fees up to date in the other two other outcome categories. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
+@fig-socio shows that variables related to socio-economic class are also correlated to whether or not a student drops out of college. For example, a larger number of students who were debtors tended to be in the dropout category compared to the graduate and enrolled categories. The dropout category also had a greater proportion of students who don't have their tuition fees up to date compared to students who have their fees up to date. It also looks like a larger proportion of students who are not scholarship holders tend to drop out compared to students who are scholarship holders.
 
 ### Insights for feature-engineering:
 

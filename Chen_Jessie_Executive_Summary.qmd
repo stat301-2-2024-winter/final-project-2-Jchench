@@ -1,0 +1,102 @@
+---
+title: "Predicting Student Dropouts"
+subtitle: |
+  | Executive Summary
+  | Data Science 2 with R (STAT 301-2)
+author: Jessie Chen
+date: today
+
+format:
+  html:
+    toc: true
+    embed-resources: true
+    
+execute:
+  echo: false
+  warning: false
+
+from: markdown+emoji 
+---
+
+::: {.callout-tip icon="false"}
+## Github Repo Link
+
+[My Repo Link](https://github.com/stat301-2-2024-winter/final-project-2-Jchench.git)
+:::
+
+```{r}
+#| echo: false
+
+# loading packages
+library(tidyverse)
+library(naniar)
+library(here)
+library(tidymodels)
+
+# reading in data
+drop_out_data <- 
+  read_rds(here("data/dropout_data_cleaned"))
+```
+
+## Introduction
+
+Student college drop out rates can be a particular concern to institutions. Being able to indicate factors that might make a student more at risk of dropping out will help schools identify ways to provide support students and address this issue. Thus, I think it would be helpful to develop a model that can predict whether or not a student has drop out based on certain variables. The [dataset](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) that I used for this project is from UC Irvine's Machine Learning Repository. This dataset was created by a number of authors, using information from higher education institution (acquired from several disjoint databases) related to students enrolled in different undergraduate degrees. \[\^1\] The type of prediction problem that I focused on for this project is a **classification problem** and I'm looking to identify whether or not a student has dropped out of college at the end of a school year (2 semesters). For this project, I used 6 model types: Naive Bayes (baseline model), Multinomial (because my target variable has 3 factor levels), Elastic Net, K-Nearest Neighbor, Random Forest, and Boosted Tree. I also tuned 5 of these models (with the exception of Naive Bayes) to 2 recipes: a baseline recipe and a feature-engineered recipe based on exploratory data analysis.
+
+## Major Results
+
+After tuning and fitting all my models to resamples, I compared the performance of each model according to the ROC AUC metric.
+
+```{r}
+#| echo: false
+#| label: tbl-modresults
+#| tbl-cap: "Model result ROC AUC comparisons"
+
+load(here("results/results_table.rda"))
+
+results_table |> 
+  knitr::kable()
+```
+As we can see from @tbl-modresults, the Boosted Tree model built with the baseline recipe has an ROC AUC value that was closet to 1. This means that this model performed the best out of all the 6 models.
+
+I then fit the Boosted Tree model (final model) to my training dataset and generated results by testing it against the testing dataset. I evaluated these results by 3 metrics: ROC AUC curves, Accuracy, and a Confusion matrix.
+
+```{r}
+#| echo: false
+#| label: fig-rocauc
+#| fig-cap: "Final model ROC AUC result"
+
+load(here("results/fina_metrics.rda"))
+
+pred_curve
+```
+As shown in @fig-rocauc, the ROC AUC curve for the dropout class is relatively high. It's mostly above the random classifier threshold, which means that the predictions from the final model are at least better than random guesses (0.5). The ROC AUC curve for the other two classes are not as high. In particular for the regions where specificity is less than 0.75, sensitivity is also quite low and the predictions tend to be worse than random guesses.
+
+```{r}
+#| echo: false
+#| label: tbl-accuracy
+#| tbl-cap: "Final model accuracy result"
+
+load(here("results/fina_metrics.rda"))
+
+pred_accuracy |> 
+  knitr::kable()
+```
+
+@tbl-accuracy shows the accuracy value of the final model, which is around 0.795. This means that the final model was able to predict around 79.5% of the true values in the testing dataset.
+
+```{r}
+#| echo: false
+#| label: tbl-confmat
+#| tbl-cap: "Final model confusion matrix"
+
+load(here("results/fina_metrics.rda"))
+
+as.data.frame.matrix(predict_conf$table) |> 
+  knitr::kable()
+```
+
+Lastly, the confusion matrix (@tbl-confmat) calculates classes that were observed in the testing dataset and predicted by the final model. In this case, the matrix shows the number of dropouts, graduates, and currently enrolled students that the model predicted, along with false positives and negatives. The quadrant Dropout, Dropout corresponds to when the model correctly predicted the number of dropout, which is 279 times. There are also a couple quadrants that indicate false positives. The quadrant Dropout, Graduate corresponds to the number of times the model predicted a student had dropped out when they actually graduated, which is 14 times. The quadrant Dropout, Enrolled corresponds to the number of times the model predicted a student has dropped out when they actually are still enrolled, which is 50 times. There are also a couple of quadrants that indicate false negatives. The quadrant Graduate, Dropout corresponds to the number of times the model predicted a student had graduated when they actually dropped out, which is 39 times. The quadrant Enrolled, Dropout corresponds to the number of times the model predicted a student was enrolled when they actually dropped out, which is 38 times. Overall, the model seemed to do pretty well at predicting the number of true dropouts and true graduates.
+
+## Conclusions
+
+In conclusion it seems that the Boosted Tree model built with the baseline kitchen sink recipe performed the best when predicting whether or not a student has dropped out of college (around 79.5% accurate). However, there isn't a lot of insight into which factors particularly affected these results: as previously shown in @tbl-modresults, models made with the feature-engineered recipe performed worse than models made with the baseline recipe. Thus, further exploratory data analysis could be conducted to identify exactly which features are most important in predicting whether or not a student has dropped out.
